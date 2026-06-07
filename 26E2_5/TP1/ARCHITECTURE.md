@@ -69,20 +69,21 @@ O backend segue um design rígido em camadas para separação de responsabilidad
 O diagrama a seguir descreve a interação dos componentes físicos do sistema:
 
 ```mermaid
-component
-  [Frontend: React Single Page App] as SPA
-  
-  package "Backend: Spring Boot Monolith" {
-    [Controllers] as Ctrl
-    [Services] as Svc
-    [Domain Entities / Repositories] as Dom
-    [Database: H2 (In-Memory)] as H2
-  }
-  
-  SPA -->|REST HTTP / JSON| Ctrl
-  Ctrl --> Svc
-  Svc --> Dom
-  Dom --> H2
+flowchart TD
+    SPA["Frontend: React Single Page App"]
+
+    subgraph Backend["Backend: Spring Boot Monolith"]
+        direction TB
+        Ctrl["Controllers"]
+        Svc["Services"]
+        Dom["Domain Entities / Repositories"]
+        H2[("Database: H2 (In-Memory)")]
+    end
+
+    SPA -->|REST HTTP / JSON| Ctrl
+    Ctrl --> Svc
+    Svc --> Dom
+    Dom --> H2
 ```
 
 ---
