@@ -69,9 +69,9 @@ Cada contexto delimita um subdomínio de negócio. Abaixo, classifiquei estes su
 
 ## 4. Esboço do Mapa de Contexto (Context Map)
 
-Apresento abaixo o esboço do meu **Mapa de Contexto** da Pet Friends. Conforme as diretrizes arquiteturais do curso, apliquei o relacionamento **Fornecedor-Cliente (Customer-Supplier)** prioritariamente nas integrações internas para evidenciar a cooperação lógica, definindo claramente o fluxo de dependência e entrega (*Upstream / Downstream*).
+Apresento abaixo o esboço do meu **Mapa de Contexto** da Pet Friends. Conforme as diretrizes arquiteturais do curso, apliquei o relacionamento **Fornecedor-Cliente (Customer-Supplier)** prioritariamente nas integrações internas para evidenciar a cooperação lógica entre os times.
 
-Para evitar sobreposições e garantir legibilidade visual direta nas plataformas, utilizei uma orientação horizontal (`graph LR`) e rótulos resumidos para os tipos de acoplamento:
+Para evitar qualquer tipo de sobreposição visual nos textos das setas e garantir legibilidade perfeita nas plataformas de visualização do GitHub, adotei uma orientação horizontal (`graph LR`) e codifiquei os tipos de acoplamento com siglas curtas explicadas logo abaixo:
 
 ```mermaid
 graph LR
@@ -94,22 +94,22 @@ graph LR
     
     CFMV["CFMV (Externo)"]:::external
 
-    %% Relacionamentos focados no Contexto de Veterinários
-    CFMV -->|"U -> D [ACL]"| VET
-    VET -->|"U (Supplier) -> D (Customer)"| AGEN
-    VET -->|"U (Supplier) -> D (Customer)"| VENDAS
+    %% Relações do Contexto de Veterinários
+    CFMV -->|ACL| VET
+    VET -->|C-S| AGEN
+    VET -->|C-S| VENDAS
 
-    %% Relacionamentos de Agendamento
-    PASS -->|"U (Supplier) -> D (Customer)"| AGEN
-    PDV -->|"U (Supplier) -> D (Customer)"| AGEN
+    %% Relações de Agendamento
+    PASS -->|C-S| AGEN
+    PDV -->|C-S| AGEN
 
-    %% Relacionamentos de E-commerce e Assinaturas
-    ASSIN -->|"U (Supplier) -> D (Customer)"| VENDAS
-    PDV -->|"U (Supplier) -> D (Customer)"| VENDAS
-    VENDAS -->|"D (Customer) -> U [OHS-PL]"| PAG
-    ASSIN -->|"D (Customer) -> U [OHS-PL]"| PAG
+    %% Relações de E-commerce e Assinaturas
+    ASSIN -->|C-S| VENDAS
+    PDV -->|C-S| VENDAS
+    VENDAS -->|OHS/PL| PAG
+    ASSIN -->|OHS/PL| PAG
 
-    %% Legenda
+    %% Legenda de Cores
     subgraph LEGENDA
         L1[Subdomínio Principal]:::core
         L2[Subdomínio de Suporte]:::support
@@ -117,11 +117,11 @@ graph LR
     end
 ```
 
-### Detalhamento das Relações
-1. **Fornecedor-Cliente / Customer-Supplier (U $\rightarrow$ D):** Aplicado nos fluxos de dados internos. O **Fornecedor (Upstream - U)** fornece dados brutos e contratos (APIs), enquanto o **Cliente (Downstream - D)** os consome. As entregas são alinhadas entre os responsáveis.
-   * *Exemplo (Veterinários $\rightarrow$ Agendamento):* O contexto de Veterinários fornece a lista de profissionais validados e ativos. O contexto de Agendamento consome essa lista para gerar slots.
-2. **Camada Anti-Corrupção / Anti-Corruption Layer (ACL):** Implementei uma ACL no contexto de Veterinários para interagir com o **CFMV**. Isso impede que o modelo de domínio de Veterinários seja impactado por estruturas legadas ou mudanças no sistema do órgão federal público.
-3. **Open Host Service / Published Language (OHS-PL):** O contexto de **Pagamentos** atua como um serviço genérico exposto por uma interface padrão estável, com uma linguagem publicada que Vendas e Assinaturas seguem para enviar dados de cobrança.
+### Convenção e Legenda das Relações
+* **Direção da Seta (Upstream → Downstream):** Todas as setas apontam do **Upstream (U)** (Fornecedor da informação/serviço) para o **Downstream (D)** (Consumidor impactado por mudanças).
+* **C-S (Customer-Supplier / Fornecedor-Cliente):** Indica uma relação cooperativa de equipe onde as entregas e testes do downstream são alinhados e priorizados pelo upstream.
+* **ACL (Anti-Corruption Layer / Camada Anti-Corrupção):** Indica que o Downstream (Veterinários) implementa um adaptador para traduzir o modelo de dados do Upstream (CFMV), protegendo seu próprio domínio limpo de poluições externas.
+* **OHS/PL (Open Host Service / Published Language):** Indica que o Upstream (Pagamentos) fornece um serviço público aberto e estável com uma linguagem de integração padronizada e estável.
 
 ---
 
@@ -129,7 +129,7 @@ graph LR
 
 Como o meu contexto de **Gestão de Veterinários** interage diretamente com três fronteiras principais (Agendamento, E-commerce de Vendas/Remédios e CFMV Externo), adotei as seguintes estratégias técnicas e de comunicação para garantir resiliência e baixo acoplamento:
 
-### A. Veterinários $\rightarrow$ Agendamento (Consulta de Profissional e Escala)
+### A. Veterinários → Agendamento (Consulta de Profissional e Escala)
 * **Padrão de Relação:** Fornecedor-Cliente (Customer-Supplier).
 * **Integração Síncrona (REST/gRPC):**
   * **Objetivo:** O Agendamento faz chamadas síncronas de leitura HTTP GET ou gRPC para buscar a ficha detalhada e especialidades de um veterinário específico na hora de exibir as opções de agendamento na interface do cliente.
@@ -138,14 +138,14 @@ Como o meu contexto de **Gestão de Veterinários** interage diretamente com tr�
   * **Objetivo:** Sempre que um veterinário tiver sua escala cadastrada, for inativado ou mudar de especialidade, o contexto de Veterinários publica um evento (ex: `VeterinarioEscalaAlteradaEvent` ou `VeterinarioInativadoEvent`).
   * **Implementação:** O contexto de Agendamento consome esses eventos e atualiza sua base de dados local de slots. Isso desacopla os microsserviços, permitindo que a agenda funcione mesmo se o serviço de Veterinários estiver temporariamente offline.
 
-### B. Veterinários $\rightarrow$ Vendas/E-commerce (Validação de Receitas de Remédios Controlados)
+### B. Veterinários → Vendas/E-commerce (Validação de Receitas de Remédios Controlados)
 * **Padrão de Relação:** Fornecedor-Cliente (Customer-Supplier).
 * **Integração Síncrona (REST/HTTP):**
   * **Objetivo:** Um medicamento do tipo "Remédio Controlado" só pode ter seu checkout concluído se associado a uma receita médica válida emitida por um veterinário cadastrado no sistema.
   * **Implementação:** No fechamento da compra de um remédio controlado, o microsserviço de Vendas faz um POST síncrono para o endpoint `/api/receitas/validar` de Veterinários, enviando o ID da receita e o CPF do cliente.
   * **Resiliência:** Se a API de validação síncrona de receitas falhar (timeout/erro 5xx), o checkout do medicamento é retido temporariamente com uma mensagem explicativa para o cliente tentar novamente, garantindo a conformidade legal.
 
-### C. CFMV (Sistema Externo) $\rightarrow$ Veterinários (Validação de CRMV)
+### C. CFMV (Sistema Externo) → Veterinários (Validação de CRMV)
 * **Padrão de Relação:** Upstream/Downstream com Camada Anti-Corrupção (ACL).
 * **Integração Síncrona (REST/SOAP HTTPS):**
   * **Objetivo:** No cadastramento de um novo veterinário, a Pet Friends valida em tempo real se o profissional está regularizado junto ao CFMV.
@@ -159,7 +159,7 @@ Como o meu contexto de **Gestão de Veterinários** interage diretamente com tr�
         return StatusVeterinario.INATIVO;
     }
     ```
-  * **Resiliência:** Como é um serviço público sujeito a indisponibilidades, o fluxo de cadastro da Pet Friends não impede o progresso se o CFMV estiver offline. O cadastro é criado com status `PENDENTE_VALIDACAO` e uma fila de retentativas assíncrona (Dead Letter Queue/Retry Pattern) tenta reprocessar a validação periodicamente.
+  * **Resiliência:** Como é um serviço público sujeito a indisponibilidades, o fluxo de cadastro da Pet Friends não impede o progresso se o CFMV estiver offline. O cadastro é criado com status `PENDENTE_VALIDACAO` e uma fila de retentativas assíncrona (Dead Letter Queue/Retry Pattern) no RabbitMQ tenta reprocessar a validação periodicamente.
 
 ---
 
