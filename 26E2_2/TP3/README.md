@@ -1,6 +1,6 @@
 # TP3 - Design Estratégico DDD: Foco em Gestão de Veterinários (Pet Friends)
 
-Este documento apresenta a entrega do **Teste de Performance 3 (TP3)** para a disciplina de **Design Patterns e Domain-Driven Design (DDD) com Java**. O foco deste estudo é o design estratégico de um ecossistema complexo sob a ótica da equipe de **Gestão de Veterinários** da rede **Pet Friends**.
+Este documento apresenta a minha entrega do **Teste de Performance 3 (TP3)** para a disciplina de **Design Patterns e Domain-Driven Design (DDD) com Java**. O foco deste meu estudo é o design estratégico de um ecossistema complexo sob a minha ótica no contexto de **Gestão de Veterinários** da rede **Pet Friends**.
 
 ---
 
@@ -8,13 +8,13 @@ Este documento apresenta a entrega do **Teste de Performance 3 (TP3)** para a di
 
 A **Pet Friends** é uma grande rede de franquias de pet shops no Brasil, contando com mais de 1000 lojas físicas estruturadas por regiões geográficas exclusivas (sem sobreposição de CEPs). Além da venda física e e-commerce de produtos (incluindo modelos de assinatura recorrente), a Pet Friends oferece serviços agendados como banho, tosa, passeios (dog walking) e consultas veterinárias integradas com o sistema de validação profissional do Conselho Federal de Medicina Veterinária (CFMV).
 
-Como equipe responsável pelo contexto de **Gestão de Veterinários**, nosso objetivo é modelar estrategicamente as fronteiras do nosso domínio (Bounded Contexts), classificar a criticidade de cada subdomínio de negócio e desenhar um **Mapa de Contexto (Context Map)** focado em integrações eficientes e de baixo acoplamento.
+Como responsável pelo desenvolvimento do contexto de **Gestão de Veterinários**, meu objetivo é modelar estrategicamente as fronteiras do meu domínio (Bounded Contexts), classificar a criticidade de cada subdomínio de negócio e desenhar o meu **Mapa de Contexto (Context Map)** focado em integrações eficientes, de baixo acoplamento e resiliência.
 
 ---
 
 ## 2. Bounded Contexts (Contextos Delimitados) da Empresa
 
-Para organizar o desenvolvimento e delimitar as responsabilidades no modelo de domínio da Pet Friends, dividimos o sistema nos seguintes **Bounded Contexts**:
+Para organizar o desenvolvimento e delimitar as responsabilidades no modelo de domínio da Pet Friends, dividi o sistema nos seguintes **Bounded Contexts**:
 
 ### 1. Contexto de Gestão de Veterinários (`Veterinary Management Context`)
 * **Escopo:** Cadastro completo dos profissionais veterinários (dados pessoais, especialidades, conselho regional/CRMV) e emissão de receitas digitais para medicamentos controlados.
@@ -52,9 +52,9 @@ Para organizar o desenvolvimento e delimitar as responsabilidades no modelo de d
 
 ## 3. Classificação e Justificativa dos Subdomínios
 
-Cada contexto delimita um subdomínio de negócio. Abaixo, estes subdomínios são classificados em termos de valor estratégico e diferenciação competitiva para a Pet Friends:
+Cada contexto delimita um subdomínio de negócio. Abaixo, classifiquei estes subdomínios em termos de valor estratégico e diferenciação competitiva para a Pet Friends:
 
-| Subdomínio / Contexto | Classificação | Justificativa de Negócio |
+| Subdomínio / Contexto | Classificação | Minha Justificativa de Negócio |
 | :--- | :---: | :--- |
 | **Gestão de Veterinários** | **Principal (Core Domain)** | Essencial para a estratégia de serviços especializados de saúde da rede. A validação correta e integração com a venda de remédios controlados trazem confiabilidade e responsabilidade médica que diferenciam a Pet Friends de pet shops comuns. |
 | **Agendamento de Serviços** | **Principal (Core Domain)** | A conveniência de agendar consultas, banho, tosa e passeios de forma integrada e otimizada por geolocalização é um pilar de experiência do cliente de alto valor, retendo o tutor no ecossistema da marca. |
@@ -69,10 +69,12 @@ Cada contexto delimita um subdomínio de negócio. Abaixo, estes subdomínios s�
 
 ## 4. Esboço do Mapa de Contexto (Context Map)
 
-Abaixo está o esboço do **Mapa de Contexto** da Pet Friends. Conforme as diretrizes arquiteturais, o relacionamento **Fornecedor-Cliente (Customer-Supplier)** foi aplicado prioritariamente nas integrações internas para evidenciar a cooperação entre times, definindo claramente o fluxo de dependência e entrega (*Upstream / Downstream*).
+Apresento abaixo o esboço do meu **Mapa de Contexto** da Pet Friends. Conforme as diretrizes arquiteturais do curso, apliquei o relacionamento **Fornecedor-Cliente (Customer-Supplier)** prioritariamente nas integrações internas para evidenciar a cooperação lógica, definindo claramente o fluxo de dependência e entrega (*Upstream / Downstream*).
+
+Para evitar sobreposições e garantir legibilidade visual direta nas plataformas, utilizei uma orientação horizontal (`graph LR`) e rótulos resumidos para os tipos de acoplamento:
 
 ```mermaid
-graph TD
+graph LR
     %% Estilização de Nós por tipo de Subdomínio
     classDef core fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#155724;
     classDef support fill:#fff3cd,stroke:#ffc107,stroke-width:2px,color:#856404;
@@ -93,19 +95,19 @@ graph TD
     CFMV["CFMV (Externo)"]:::external
 
     %% Relacionamentos focados no Contexto de Veterinários
-    CFMV -->|Upstream / Downstream com ACL| VET
-    VET -->|"[Upstream / Fornecedor] -- [Downstream / Cliente]"| AGEN
-    VET -->|"[Upstream / Fornecedor] -- [Downstream / Cliente (Valida Receita)]"| VENDAS
+    CFMV -->|"U -> D [ACL]"| VET
+    VET -->|"U (Supplier) -> D (Customer)"| AGEN
+    VET -->|"U (Supplier) -> D (Customer)"| VENDAS
 
     %% Relacionamentos de Agendamento
-    PASS -->|"[Upstream / Fornecedor] -- [Downstream / Cliente]"| AGEN
-    PDV -->|"[Upstream / Fornecedor] -- [Downstream / Cliente]"| AGEN
+    PASS -->|"U (Supplier) -> D (Customer)"| AGEN
+    PDV -->|"U (Supplier) -> D (Customer)"| AGEN
 
     %% Relacionamentos de E-commerce e Assinaturas
-    ASSIN -->|"[Upstream / Fornecedor] -- [Downstream / Cliente]"| VENDAS
-    PDV -->|"[Upstream / Fornecedor] -- [Downstream / Cliente]"| VENDAS
-    VENDAS -->|"[Downstream / Cliente] -- [Upstream / OHS-PL]"| PAG
-    ASSIN -->|"[Downstream / Cliente] -- [Upstream / OHS-PL]"| PAG
+    ASSIN -->|"U (Supplier) -> D (Customer)"| VENDAS
+    PDV -->|"U (Supplier) -> D (Customer)"| VENDAS
+    VENDAS -->|"D (Customer) -> U [OHS-PL]"| PAG
+    ASSIN -->|"D (Customer) -> U [OHS-PL]"| PAG
 
     %% Legenda
     subgraph LEGENDA
@@ -115,39 +117,39 @@ graph TD
     end
 ```
 
-### Explicação do Mapa de Relações
-1. **Fornecedor-Cliente (Customer-Supplier):** Aplicado nos fluxos de dados internos. O **Fornecedor (Upstream)** fornece dados brutos e contratos (APIs). O **Cliente (Downstream)** consome e é impactado por mudanças.
-   * *Exemplo (Veterinários -> Agendamento):* O contexto de Veterinários fornece a lista de profissionais validados e ativos. O contexto de Agendamento consome essa lista para gerar slots. Se a equipe de Veterinários alterar a estrutura da API, a equipe de Agendamento precisa ser comunicada e adaptar seus testes.
-2. **Camada Anti-Corrupção (ACL - Anti-Corruption Layer):** O contexto de Veterinários implementa uma ACL para interagir com o **CFMV**. Isso impede que termos e estruturas de dados legados ou complexos do conselho federal poluam o modelo de domínio limpo de Veterinários.
-3. **Open Host Service / Published Language (OHS/PL):** O contexto de **Pagamentos** atua como um serviço genérico de alta reutilização que define uma linguagem pública padronizada. Tanto Vendas quanto Assinaturas adaptam seus fluxos para enviar dados conforme o contrato publicado pelo Gateway de Pagamento.
+### Detalhamento das Relações
+1. **Fornecedor-Cliente / Customer-Supplier (U $\rightarrow$ D):** Aplicado nos fluxos de dados internos. O **Fornecedor (Upstream - U)** fornece dados brutos e contratos (APIs), enquanto o **Cliente (Downstream - D)** os consome. As entregas são alinhadas entre os responsáveis.
+   * *Exemplo (Veterinários $\rightarrow$ Agendamento):* O contexto de Veterinários fornece a lista de profissionais validados e ativos. O contexto de Agendamento consome essa lista para gerar slots.
+2. **Camada Anti-Corrupção / Anti-Corruption Layer (ACL):** Implementei uma ACL no contexto de Veterinários para interagir com o **CFMV**. Isso impede que o modelo de domínio de Veterinários seja impactado por estruturas legadas ou mudanças no sistema do órgão federal público.
+3. **Open Host Service / Published Language (OHS-PL):** O contexto de **Pagamentos** atua como um serviço genérico exposto por uma interface padrão estável, com uma linguagem publicada que Vendas e Assinaturas seguem para enviar dados de cobrança.
 
 ---
 
 ## 5. Estratégias de Comunicação e Integração para o Contexto de Veterinários
 
-Como a equipe de **Gestão de Veterinários** interage diretamente com três fronteiras principais (Agendamento, E-commerce de Vendas/Remédios e CFMV Externo), adotei as seguintes estratégias técnicas e de comunicação para garantir resiliência e baixo acoplamento:
+Como o meu contexto de **Gestão de Veterinários** interage diretamente com três fronteiras principais (Agendamento, E-commerce de Vendas/Remédios e CFMV Externo), adotei as seguintes estratégias técnicas e de comunicação para garantir resiliência e baixo acoplamento:
 
 ### A. Veterinários $\rightarrow$ Agendamento (Consulta de Profissional e Escala)
 * **Padrão de Relação:** Fornecedor-Cliente (Customer-Supplier).
 * **Integração Síncrona (REST/gRPC):**
-  * **Objetivo:** O Agendamento faz chamadas síncronas de leitura HTTP GET / gRPC para buscar a ficha detalhada e especialidades de um veterinário específico na hora de exibir as opções de agendamento na interface do cliente.
-  * **Resiliência:** Uso de *Circuit Breakers* (via Resilience4j) no microsserviço de Agendamento para evitar lentidão em cascata caso o microsserviço de Veterinários passe por instabilidade.
-* **Integração Assíncrona (Eventos de Domínio via Message Broker - RabbitMQ/Kafka):**
-  * **Objetivo:** Sempre que um veterinário tiver sua escala cadastrada, for inativado ou mudar de especialidade, o contexto de Veterinários publica um evento como `VeterinarioEscalaAlteradaEvent` ou `VeterinarioInativadoEvent`.
-  * **Implementação:** O contexto de Agendamento escuta esses eventos e atualiza sua base de dados local de slots/regras de agendamento. Isso desacopla os microsserviços, permitindo que a agenda funcione mesmo se o serviço de Veterinários estiver offline por breves instantes.
+  * **Objetivo:** O Agendamento faz chamadas síncronas de leitura HTTP GET ou gRPC para buscar a ficha detalhada e especialidades de um veterinário específico na hora de exibir as opções de agendamento na interface do cliente.
+  * **Resiliência:** Utilizo *Circuit Breakers* (via Resilience4j) no microsserviço de Agendamento para evitar lentidão em cascata caso o microsserviço de Veterinários passe por instabilidade.
+* **Integração Assíncrona (Eventos de Domínio via Message Broker):**
+  * **Objetivo:** Sempre que um veterinário tiver sua escala cadastrada, for inativado ou mudar de especialidade, o contexto de Veterinários publica um evento (ex: `VeterinarioEscalaAlteradaEvent` ou `VeterinarioInativadoEvent`).
+  * **Implementação:** O contexto de Agendamento consome esses eventos e atualiza sua base de dados local de slots. Isso desacopla os microsserviços, permitindo que a agenda funcione mesmo se o serviço de Veterinários estiver temporariamente offline.
 
 ### B. Veterinários $\rightarrow$ Vendas/E-commerce (Validação de Receitas de Remédios Controlados)
 * **Padrão de Relação:** Fornecedor-Cliente (Customer-Supplier).
 * **Integração Síncrona (REST/HTTP):**
   * **Objetivo:** Um medicamento do tipo "Remédio Controlado" só pode ter seu checkout concluído se associado a uma receita médica válida emitida por um veterinário cadastrado no sistema.
   * **Implementação:** No fechamento da compra de um remédio controlado, o microsserviço de Vendas faz um POST síncrono para o endpoint `/api/receitas/validar` de Veterinários, enviando o ID da receita e o CPF do cliente.
-  * **Resiliência:** Se a API de validação síncrona de receitas falhar (timeout/erro 5xx), o checkout do medicamento é temporariamente retido com uma mensagem amigável para o cliente tentar novamente, garantindo conformidade legal.
+  * **Resiliência:** Se a API de validação síncrona de receitas falhar (timeout/erro 5xx), o checkout do medicamento é retido temporariamente com uma mensagem explicativa para o cliente tentar novamente, garantindo a conformidade legal.
 
 ### C. CFMV (Sistema Externo) $\rightarrow$ Veterinários (Validação de CRMV)
 * **Padrão de Relação:** Upstream/Downstream com Camada Anti-Corrupção (ACL).
 * **Integração Síncrona (REST/SOAP HTTPS):**
-  * **Objetivo:** No momento em que um novo veterinário é cadastrado, a Pet Friends precisa validar em tempo real se o profissional está em situação regular no Conselho Federal de Medicina Veterinária.
-  * **Implementação da ACL:** Criamos um módulo adaptador (ACL) dentro do microsserviço de Veterinários. Este adaptador consome o serviço do CFMV (que pode expor formatos em XML ou estruturas de dados não padronizadas), valida a assinatura e traduz o resultado para um modelo interno da Pet Friends:
+  * **Objetivo:** No cadastramento de um novo veterinário, a Pet Friends valida em tempo real se o profissional está regularizado junto ao CFMV.
+  * **Implementação da ACL:** Criei um módulo adaptador (ACL) no microsserviço de Veterinários. Este adaptador consome o serviço do CFMV, valida a assinatura e traduz o resultado para o modelo interno da Pet Friends:
     ```java
     // Tradução da ACL na prática:
     public StatusVeterinario traduzirStatusCFMV(CFMVResponse response) {
@@ -157,12 +159,12 @@ Como a equipe de **Gestão de Veterinários** interage diretamente com três fro
         return StatusVeterinario.INATIVO;
     }
     ```
-  * **Resiliência:** Por ser um serviço governamental externo sujeito a indisponibilidades, o fluxo de cadastro da Pet Friends não impede o progresso se o CFMV estiver offline. O cadastro é criado com status `PENDENTE_VALIDACAO` e uma fila de retentativas assíncrona (Dead Letter Queue/Retry Pattern) no RabbitMQ tenta reprocessar a validação assim que o serviço externo retornar.
+  * **Resiliência:** Como é um serviço público sujeito a indisponibilidades, o fluxo de cadastro da Pet Friends não impede o progresso se o CFMV estiver offline. O cadastro é criado com status `PENDENTE_VALIDACAO` e uma fila de retentativas assíncrona (Dead Letter Queue/Retry Pattern) tenta reprocessar a validação periodicamente.
 
 ---
 
 ## 6. Conclusão e Preparação para o AT
 
-Este desenho de arquitetura estratégica estabelece fronteiras claras para cada contexto de negócio do ecossistema Pet Friends. Classificar os subdomínios permitiu que a equipe priorizasse esforços no que é verdadeiramente estratégico (Veterinários, Agendamento e Assinaturas), reduzindo custos e riscos em subdomínios genéricos.
+Este desenho de arquitetura estratégica estabelece fronteiras claras para cada contexto de negócio do ecossistema Pet Friends. Classificar os subdomínios permitiu que eu priorizasse esforços no que é verdadeiramente estratégico (Veterinários, Agendamento e Assinaturas), mitigando riscos e custos em subdomínios genéricos.
 
-As estratégias de integração síncronas/assíncronas e o isolamento de dependências com a ACL do CFMV blindam o domínio de Gestão de Veterinários, preparando uma fundação sólida para a modelagem tática (entidades, agregados, repositórios) e de microsserviços que serão solicitadas no **Assessment (AT)**.
+As estratégias de integração síncronas/assíncronas e o isolamento de dependências com a ACL do CFMV blindam o domínio de Gestão de Veterinários que modelei, preparando uma fundação sólida para a modelagem tática (entidades, agregados, repositórios) e de microsserviços que serão solicitadas no **Assessment (AT)**.
