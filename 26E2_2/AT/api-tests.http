@@ -1,0 +1,117 @@
+### Configurações de Ambiente
+@hostname = http://localhost:8080
+
+### 1. Criar uma nova conta com cartão ativo
+# @name createAccount
+POST {{hostname}}/api/accounts
+Content-Type: application/json
+
+{
+  "name": "Marcus Boni",
+  "email": "marcus@email.com",
+  "cardNumber": "1234-5678-9012-3456",
+  "cardLimit": "5000",
+  "cardActive": true
+}
+
+###
+
+### 2. Criar uma nova conta com cartão INATIVO (para testes de rejeição)
+# @name createAccountInactive
+POST {{hostname}}/api/accounts
+Content-Type: application/json
+
+{
+  "name": "Cliente Inativo",
+  "email": "inativo@email.com",
+  "cardNumber": "9876-5432-1098-7654",
+  "cardLimit": "1000",
+  "cardActive": false
+}
+
+###
+
+# IMPORTANTE: Copie o UUID retornado no header 'Location' da criação de conta acima
+# E substitua no valor da variável @accountId abaixo para os próximos testes:
+@accountId = d838a0bc-30b0-466d-8693-4903332eb4ff
+
+# ID da conta com cartão inativo para testar rejeição de transação:
+@inactiveAccountId = 8c0d16be-0fb4-4df2-8da5-a9f4c39c8942
+
+
+### 3. Assinar o plano PREMIUM para a conta
+POST {{hostname}}/api/accounts/{{accountId}}/subscriptions?plan=PREMIUM
+
+###
+
+### 4. Favoritar uma música (Bohemian Rhapsody)
+# Ouvinte possui o mesmo UUID da conta criada
+POST {{hostname}}/api/streaming/listeners/{{accountId}}/favorites/a5f3cbda-3ff6-455b-b9ab-76f5b9d3bdf9
+
+###
+
+### 5. Criar uma Playlist
+POST {{hostname}}/api/streaming/listeners/{{accountId}}/playlists?name=Rock Clássicos
+
+# IMPORTANTE: Copie o UUID retornado no header 'Location' da playlist criada
+# e substitua abaixo:
+@playlistId = f8f3cbda-3ff6-455b-b9ab-76f5b9d3bdff
+
+
+### 6. Adicionar música "Imagine" à playlist criada
+POST {{hostname}}/api/streaming/playlists/{{playlistId}}/songs/afcafeaa-2a7e-4b41-9f56-c9d542e30b78
+
+###
+
+
+### ==========================================
+### TESTES DE AUTORIZAÇÃO DE TRANSAÇÕES
+### ==========================================
+
+### 7. Autorizar transação válida (Sucesso)
+POST {{hostname}}/api/transactions/authorize
+Content-Type: application/json
+
+{
+  "accountId": "{{accountId}}",
+  "merchantName": "Spotify",
+  "amount": 19.90
+}
+
+###
+
+### 8. Tentar autorizar transação com Cartão Inativo (Deve ser rejeitada)
+POST {{hostname}}/api/transactions/authorize
+Content-Type: application/json
+
+{
+  "accountId": "{{inactiveAccountId}}",
+  "merchantName": "Netflix",
+  "amount": 55.90
+}
+
+###
+
+### 9. Testar Transação Duplicada (Enviar duas vezes seguidas a mesma request abaixo)
+# Regra: bloqueia transação se houver outra igual (mesmo merchant e valor) em menos de 2 minutos
+POST {{hostname}}/api/transactions/authorize
+Content-Type: application/json
+
+{
+  "accountId": "{{accountId}}",
+  "merchantName": "Steam Games",
+  "amount": 150.00
+}
+
+###
+
+### 10. Testar Alta Frequência (Enviar 4 vezes seguidas rapidamente)
+# Regra: bloqueia se houver 3 ou mais transações nos últimos 2 minutos
+POST {{hostname}}/api/transactions/authorize
+Content-Type: application/json
+
+{
+  "accountId": "{{accountId}}",
+  "merchantName": "Uber",
+  "amount": 15.50
+}
