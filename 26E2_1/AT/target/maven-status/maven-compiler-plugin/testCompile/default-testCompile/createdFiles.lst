@@ -1,0 +1,3 @@
+br\edu\infnet\hospitalapi\integration\PacienteIntegrationTest.class
+br\edu\infnet\hospitalapi\service\MedicoServiceTest.class
+br\edu\infnet\hospitalapi\service\PacienteServiceTest.class
