@@ -1,0 +1,6 @@
+com\infnet\tp2\integration\OptimisticLockingTest.class
+com\infnet\tp2\domain\model\OrderTest.class
+com\infnet\tp2\service\OrderServiceTest.class
+com\infnet\tp2\repository\AuditLogRepositoryTest.class
+com\infnet\tp2\repository\OrderRepositoryTest.class
+com\infnet\tp2\repository\ProductRepositoryTest.class
