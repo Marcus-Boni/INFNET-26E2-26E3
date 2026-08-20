@@ -1,0 +1,7 @@
+com\infnet\tp3\integration\OptimisticLockingTest.class
+com\infnet\tp3\client\ShippingClientFallbackTest.class
+com\infnet\tp3\service\OrderServiceDistributedTest.class
+com\infnet\tp3\repository\OrderRepositoryTest.class
+com\infnet\tp3\domain\model\OrderTest.class
+com\infnet\tp3\repository\ProductRepositoryTest.class
+com\infnet\tp3\repository\AuditLogRepositoryTest.class

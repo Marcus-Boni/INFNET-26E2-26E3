@@ -1,0 +1,4 @@
+com\infnet\shipping\repository\ShipmentRepositoryTest.class
+com\infnet\shipping\controller\ShipmentControllerTest.class
+com\infnet\shipping\service\FreightCalculationServiceTest.class
+com\infnet\shipping\repository\TrackingEventRepositoryTest.class
