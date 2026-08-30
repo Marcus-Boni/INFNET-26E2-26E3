@@ -2,7 +2,7 @@
 
 > **Trabalho Prático 1 (TP1) — Entrega 1: Proposta e Arquitetura Inicial de Microservices**  
 > **Turma:** Segunda e Quarta | **Modalidade:** Individual  
-> **Aluno:** Marcus Boni (`mgalvaoboni@gmail.com`)  
+> **Aluno:** Marcus Boni (`marcus.boni@al.infnet.edu.br`)  
 > **Repositório:** [https://github.com/Marcus-Boni/INFNET-26E2-26E3](https://github.com/Marcus-Boni/INFNET-26E2-26E3)
 
 ---
