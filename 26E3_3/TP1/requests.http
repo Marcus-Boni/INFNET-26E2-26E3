@@ -1,0 +1,120 @@
+### ==============================================================================
+### TECHMARKET - TEST SUITE DE REQUISIÇÕES HTTP (VIA API GATEWAY PORTA 8080)
+### ==============================================================================
+
+@GATEWAY_URL = http://localhost:8080
+@EUREKA_URL = http://localhost:8761
+@CATALOG_DIRECT_URL = http://localhost:8082
+@ORDER_DIRECT_URL = http://localhost:8081
+
+### ------------------------------------------------------------------------------
+### 1. HEALTH CHECKS & DISCOVERY
+### ------------------------------------------------------------------------------
+
+### 1.1 Status do API Gateway
+GET {{GATEWAY_URL}}/actuator/health
+
+### 1.2 Status das Rotas do Gateway
+GET {{GATEWAY_URL}}/actuator/gateway/routes
+
+### 1.3 Discovery Server (Eureka Dashboard em navegador: http://localhost:8761)
+GET {{EUREKA_URL}}/eureka/apps
+Accept: application/json
+
+### ------------------------------------------------------------------------------
+### 2. CATALOG SERVICE (VIA GATEWAY: /api/products) - NoSQL MongoDB
+### ------------------------------------------------------------------------------
+
+### 2.1 Listar todos os produtos do catálogo (Carga inicial)
+GET {{GATEWAY_URL}}/api/products
+
+### 2.2 Filtrar produtos por categoria
+GET {{GATEWAY_URL}}/api/products?category=Computadores
+
+### 2.3 Filtrar produtos por tag
+GET {{GATEWAY_URL}}/api/products?tag=gamer
+
+### 2.4 Cadastrar novo produto com atributos técnicos flexíveis (NoSQL dynamic schema)
+# @name createProduct
+POST {{GATEWAY_URL}}/api/products
+Content-Type: application/json
+
+{
+  "name": "Placa de Vídeo RTX 4090 OC 24GB",
+  "description": "Placa topo de linha para renderização 3D pesada e jogos em 4K Ultra",
+  "category": "Componentes",
+  "price": 14999.90,
+  "stockQuantity": 8,
+  "specifications": {
+    "vram": "24GB GDDR6X",
+    "cudaCores": 16384,
+    "memoryBus": "384-bit",
+    "powerConsumption": "450W",
+    "recommendedPsu": "850W",
+    "dlssVersion": "DLSS 3.5",
+    "rayTracing": true
+  },
+  "tags": ["gpu", "nvidia", "rtx4090", "hardware", "4k"]
+}
+
+### 2.5 Buscar produto cadastrado pelo ID
+# Substitua pelo ID retornado na criação ou pela listagem
+GET {{GATEWAY_URL}}/api/products/{{createProduct.response.body.id}}
+
+
+### ------------------------------------------------------------------------------
+### 3. ORDER SERVICE (VIA GATEWAY: /api/orders) - SQL PostgreSQL + Resiliência
+### ------------------------------------------------------------------------------
+
+### 3.1 Criar novo pedido (Comunicação Feign com catalog-service para validar produto e preço)
+# @name createOrder
+POST {{GATEWAY_URL}}/api/orders
+Content-Type: application/json
+
+{
+  "customerId": "CLI-9901",
+  "customerEmail": "marcus.boni@aluno.infnet.edu.br",
+  "items": [
+    {
+      "productId": "{{createProduct.response.body.id}}",
+      "quantity": 1
+    }
+  ]
+}
+
+### 3.2 Listar todos os pedidos
+GET {{GATEWAY_URL}}/api/orders
+
+### 3.3 Listar pedidos por cliente
+GET {{GATEWAY_URL}}/api/orders?customerId=CLI-9901
+
+### 3.4 Buscar pedido por ID
+GET {{GATEWAY_URL}}/api/orders/1
+
+### 3.5 Atualizar status do pedido (CONFIRMED)
+PATCH {{GATEWAY_URL}}/api/orders/1/status?status=CONFIRMED
+
+
+### ------------------------------------------------------------------------------
+### 4. TESTE DE RESILIÊNCIA (CIRCUIT BREAKER & FALLBACK COM RESILIENCE4J)
+### ------------------------------------------------------------------------------
+
+### 4.1 Criar pedido com produto inexistente ou quando catalog-service estiver fora do ar
+# Observe que o pedido é criado com status "DEGRADED (Circuit Breaker / Fallback)"
+# e preço de contingência sem quebrar ou dar erro 500 no order-service.
+POST {{GATEWAY_URL}}/api/orders
+Content-Type: application/json
+
+{
+  "customerId": "CLI-8802",
+  "customerEmail": "cliente.teste@techmarket.com",
+  "items": [
+    {
+      "productId": "id-produto-inexistente-ou-offline",
+      "quantity": 2
+    }
+  ]
+}
+
+### 4.2 Métricas do Circuit Breaker no Actuator do Order Service
+GET {{ORDER_DIRECT_URL}}/actuator/circuitbreakers

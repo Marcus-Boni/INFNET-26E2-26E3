@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  # Banco de dados NoSQL do catalog-service
+  catalog-mongodb:
+    image: mongo:7.0
+    container_name: techmarket-catalog-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
+      MONGO_INITDB_DATABASE: catalog_db
+    volumes:
+      - mongodb_catalog_data:/data/db
+    networks:
+      - techmarket-network
+
+  # Banco de dados Relacional SQL do order-service
+  order-postgres:
+    image: postgres:16-alpine
+    container_name: techmarket-order-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: order_db
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    networks:
+      - techmarket-network
+
+volumes:
+  mongodb_catalog_data:
+    driver: local
+  postgres_order_data:
+    driver: local
+
+networks:
+  techmarket-network:
+    driver: bridge
