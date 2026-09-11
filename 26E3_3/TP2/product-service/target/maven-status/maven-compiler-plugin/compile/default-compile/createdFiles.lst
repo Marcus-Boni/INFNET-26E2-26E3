@@ -1,0 +1,11 @@
+com\techmarket\productservice\controller\ProductController.class
+com\techmarket\productservice\domain\Product$ProductBuilder.class
+com\techmarket\productservice\repository\InMemoryProductRepository.class
+com\techmarket\productservice\dto\ProductResponse.class
+com\techmarket\productservice\ProductServiceApplication.class
+com\techmarket\productservice\domain\Product.class
+com\techmarket\productservice\dto\ProductRequest.class
+com\techmarket\productservice\dto\ProductResponse$ProductResponseBuilder.class
+com\techmarket\productservice\repository\ProductRepository.class
+com\techmarket\productservice\service\ProductService.class
+com\techmarket\productservice\dto\ProductRequest$ProductRequestBuilder.class

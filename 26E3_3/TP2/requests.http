@@ -1,0 +1,136 @@
+### ==============================================================================
+### TECHMARKET TP2 - SUÍTE DE REQUISIÇÕES HTTP (MICROSSERVIÇOS DOCKER E KUBERNETES)
+### ==============================================================================
+
+# Definição de Variáveis de Ambiente para Testes
+# Local / Docker / Compose:
+@PRODUCT_URL = http://localhost:8081
+@ORDER_URL = http://localhost:8082
+
+# Kubernetes (via NodePort):
+@K8S_PRODUCT_URL = http://localhost:30081
+@K8S_ORDER_URL = http://localhost:30082
+
+### ==============================================================================
+### 1. PRODUCT-SERVICE (ETAPAS 3, 5, 8, 9, 11, 13)
+### ==============================================================================
+
+### 1.1 Listar todos os produtos (GET /products)
+GET {{PRODUCT_URL}}/products
+Accept: application/json
+
+### 1.2 Buscar produto por ID existente (Exemplo do enunciado: GET /products/10)
+GET {{PRODUCT_URL}}/products/10
+Accept: application/json
+
+### 1.3 Buscar outro produto por ID (Exemplo: GET /products/1)
+GET {{PRODUCT_URL}}/products/1
+Accept: application/json
+
+### 1.4 Cadastrar novo produto tecnológico (POST /products)
+POST {{PRODUCT_URL}}/products
+Content-Type: application/json
+
+{
+  "name": "Headset Gamer Sem Fio Logitech G Pro X 2 LIGHTSPEED",
+  "description": "Drivers de grafeno de 50mm, conectividade tri-mode e bateria de até 50h",
+  "price": 1699.90,
+  "stockQuantity": 30
+}
+
+### 1.5 Cadastrar segundo novo produto
+POST {{PRODUCT_URL}}/products
+Content-Type: application/json
+
+{
+  "name": "Placa de Vídeo RTX 4070 Super 12GB",
+  "description": "GPU Ada Lovelace com suporte a DLSS 3 e Ray Tracing avançado",
+  "price": 4499.00,
+  "stockQuantity": 18
+}
+
+### 1.6 Informações da instância / Pod do product-service (GET /products/info)
+# Retorna o hostname da réplica para comprovar o balanceamento de carga (Etapa 13)
+GET {{PRODUCT_URL}}/products/info
+Accept: application/json
+
+### 1.7 Health check do product-service (Actuator)
+GET {{PRODUCT_URL}}/actuator/health
+
+
+### ==============================================================================
+### 2. ORDER-SERVICE (ETAPAS 4, 7, 8, 9, 12)
+### ==============================================================================
+
+### 2.1 Listar todos os pedidos (GET /orders)
+GET {{ORDER_URL}}/orders
+Accept: application/json
+
+### 2.2 Criar um novo pedido com validação no product-service (POST /orders)
+# O order-service consulta GET /products/10 no product-service para validar e calcular total
+POST {{ORDER_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Marcus Boni",
+  "productId": "10",
+  "quantity": 2
+}
+
+### 2.3 Criar pedido para o produto ID 1 (Notebook Gamer)
+POST {{ORDER_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Lucas Silva",
+  "productId": "1",
+  "quantity": 1
+}
+
+### 2.4 Buscar pedido por ID (GET /orders/1)
+GET {{ORDER_URL}}/orders/1
+Accept: application/json
+
+### 2.5 Teste de Validação / Erro: Tentar criar pedido com produto INEXISTENTE (ID 999)
+# Deve retornar HTTP 400 Bad Request informando que o produto não existe no product-service
+POST {{ORDER_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Cliente Teste Falha",
+  "productId": "999",
+  "quantity": 1
+}
+
+### 2.6 Informações do order-service e endereço remoto configurado
+GET {{ORDER_URL}}/orders/info
+Accept: application/json
+
+### 2.7 Health check do order-service (Actuator)
+GET {{ORDER_URL}}/actuator/health
+
+
+### ==============================================================================
+### 3. TESTES NO KUBERNETES VIA NODEPORT (ETAPAS 11, 12, 13)
+### ==============================================================================
+
+### 3.1 Consultar product-service no K8s (NodePort 30081)
+GET {{K8S_PRODUCT_URL}}/products/10
+
+### 3.2 Executar múltiplas vezes para verificar o balanceamento de carga entre as 3 réplicas
+# Observe o campo 'servedBy' ou cabeçalho 'X-Served-By' variando entre os Pods!
+GET {{K8S_PRODUCT_URL}}/products/info
+
+### 3.3 Criar pedido no order-service no K8s (NodePort 30082)
+# O order-service executando no Pod consulta o Service 'product-service:8081' via CoreDNS
+POST {{K8S_ORDER_URL}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Marcus Boni (K8s Deploy)",
+  "productId": "10",
+  "quantity": 1
+}
+
+### 3.4 Listar pedidos criados no cluster Kubernetes
+GET {{K8S_ORDER_URL}}/orders

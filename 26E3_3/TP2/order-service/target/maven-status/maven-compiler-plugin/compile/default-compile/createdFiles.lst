@@ -1,0 +1,15 @@
+com\techmarket\orderservice\dto\OrderResponse.class
+com\techmarket\orderservice\dto\OrderRequest.class
+com\techmarket\orderservice\dto\ProductDto.class
+com\techmarket\orderservice\dto\OrderResponse$OrderResponseBuilder.class
+com\techmarket\orderservice\dto\ProductDto$ProductDtoBuilder.class
+com\techmarket\orderservice\repository\OrderRepository.class
+com\techmarket\orderservice\OrderServiceApplication.class
+com\techmarket\orderservice\domain\OrderStatus.class
+com\techmarket\orderservice\controller\OrderController.class
+com\techmarket\orderservice\repository\InMemoryOrderRepository.class
+com\techmarket\orderservice\domain\Order$OrderBuilder.class
+com\techmarket\orderservice\domain\Order.class
+com\techmarket\orderservice\service\OrderService.class
+com\techmarket\orderservice\client\ProductClient.class
+com\techmarket\orderservice\dto\OrderRequest$OrderRequestBuilder.class

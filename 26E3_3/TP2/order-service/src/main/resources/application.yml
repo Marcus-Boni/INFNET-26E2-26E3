@@ -1,0 +1,15 @@
+server:
+  port: ${SERVER_PORT:8082}
+
+spring:
+  application:
+    name: order-service
+
+product-service:
+  url: ${PRODUCT_SERVICE_URL:http://localhost:8081/products}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
