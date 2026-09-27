@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.infnet.shipping.integration.ShippingActuatorObservabilityTest
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.233 s -- in com.infnet.shipping.integration.ShippingActuatorObservabilityTest

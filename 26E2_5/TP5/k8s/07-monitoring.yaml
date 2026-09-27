@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-zipkin
+  namespace: nexus-store
+  labels:
+    app: nexus-zipkin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus-zipkin
+  template:
+    metadata:
+      labels:
+        app: nexus-zipkin
+    spec:
+      containers:
+        - name: zipkin
+          image: openzipkin/zipkin:latest
+          ports:
+            - name: http
+              containerPort: 9411
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 300m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-zipkin
+  namespace: nexus-store
+  labels:
+    app: nexus-zipkin
+spec:
+  selector:
+    app: nexus-zipkin
+  ports:
+    - name: http
+      port: 9411
+      targetPort: 9411
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: nexus-store
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      - job_name: 'spring-backend'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['nexus-backend:8080']
+
+      - job_name: 'spring-shipping-service'
+        metrics_path: '/actuator/prometheus'
+        static_configs:
+          - targets: ['nexus-shipping-service:8082']
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus-prometheus
+  namespace: nexus-store
+  labels:
+    app: nexus-prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nexus-prometheus
+  template:
+    metadata:
+      labels:
+        app: nexus-prometheus
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:latest
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus"
+          ports:
+            - name: http
+              containerPort: 9090
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/prometheus
+          resources:
+            requests:
+              cpu: 150m
+              memory: 256Mi
+            limits:
+              cpu: 400m
+              memory: 512Mi
+      volumes:
+        - name: config-volume
+          configMap:
+            name: prometheus-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus-prometheus
+  namespace: nexus-store
+  labels:
+    app: nexus-prometheus
+spec:
+  selector:
+    app: nexus-prometheus
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+  type: ClusterIP

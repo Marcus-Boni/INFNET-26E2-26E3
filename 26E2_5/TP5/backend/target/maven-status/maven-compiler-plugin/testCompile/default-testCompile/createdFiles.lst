@@ -1,0 +1,9 @@
+com\infnet\tp5\repository\OrderRepositoryTest.class
+com\infnet\tp5\integration\OptimisticLockingTest.class
+com\infnet\tp5\repository\AuditLogRepositoryTest.class
+com\infnet\tp5\integration\RabbitMqEventSerializationTest.class
+com\infnet\tp5\repository\ProductRepositoryTest.class
+com\infnet\tp5\domain\model\OrderTest.class
+com\infnet\tp5\client\ShippingClientFallbackTest.class
+com\infnet\tp5\integration\ActuatorObservabilityTest.class
+com\infnet\tp5\service\OrderServiceDistributedTest.class

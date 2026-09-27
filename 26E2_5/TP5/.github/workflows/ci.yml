@@ -1,0 +1,100 @@
+name: Nexus Store CI - Continuous Integration Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  backend-test:
+    name: Backend Principal (Testes & Qualidade)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Executar Testes Automatizados do Backend
+        run: mvn -B clean test --file backend/pom.xml
+
+      - name: Publicar Relatório de Testes Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+
+  shipping-test:
+    name: Shipping Service (Testes & Qualidade)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 21 (Eclipse Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Executar Testes Automatizados do Microsserviço de Frete
+        run: mvn -B clean test --file shipping-service/pom.xml
+
+      - name: Publicar Relatório de Testes Surefire
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shipping-test-results
+          path: shipping-service/target/surefire-reports/
+
+  frontend-build:
+    name: Frontend React (Instalação & Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package.json
+
+      - name: Instalar Dependências do Frontend
+        run: npm install
+
+      - name: Executar Build de Produção do Vite
+        run: npm run build
+
+      - name: Publicar Bundle de Produção
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+
+  k8s-validation:
+    name: Validação de Manifestos Kubernetes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Ferramenta kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Validar Sintaxe dos Manifestos com Kustomize Dry-Run
+        run: |
+          kubectl kustomize k8s/ > k8s-compiled.yaml
+          kubectl apply --dry-run=client -f k8s-compiled.yaml
