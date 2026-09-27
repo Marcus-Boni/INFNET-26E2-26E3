@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Message Broker RabbitMQ com plugin de gerenciamento Web
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: nexus-rabbitmq
+    ports:
+      - "5672:5672"     # Porta AMQP do Broker
+      - "15672:15672"   # Painel Web de Gerenciamento do RabbitMQ (login: guest/guest)
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nexus-network
+
+  # Microsserviço de Logística e Frete
+  shipping-service:
+    build:
+      context: ./shipping-service
+      dockerfile: Dockerfile
+    container_name: nexus-shipping-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - nexus-network
+
+  # Backend Principal / Catálogo e Pedidos
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexus-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
+      - SHIPPING_SERVICE_URL=http://shipping-service:8082
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      shipping-service:
+        condition: service_started
+    networks:
+      - nexus-network
+
+  # Frontend SPA React
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nexus-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api
+      - VITE_SHIPPING_API_URL=http://localhost:8082/api/v1/shipping
+    depends_on:
+      - backend
+      - shipping-service
+    networks:
+      - nexus-network
+
+networks:
+  nexus-network:
+    driver: bridge
