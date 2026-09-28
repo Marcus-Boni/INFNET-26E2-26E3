@@ -12,8 +12,6 @@ import {
   CheckCircle2, 
   Clock, 
   Code2, 
-  Cpu, 
-  Box, 
   Workflow, 
   Zap,
   ChevronDown,
@@ -51,7 +49,6 @@ export function EventMonitorTab() {
       ]);
 
       const all = [...(backendEvts || []), ...(shippingEvts || [])];
-      // Ordena por data decrescente
       all.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       setEvents(all);
       if (topo) setTopology(topo);
@@ -109,201 +106,352 @@ export function EventMonitorTab() {
   const receivedCount = events.filter(e => e.direction === 'RECEIVED').length;
   const dlqCount = events.filter(e => e.status === 'DLQ' || (e.eventType && e.eventType.includes('DLQ'))).length;
 
-  const getEventBadgeClass = (eventType) => {
-    switch (eventType) {
-      case 'ORDER_CREATED':
-        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
-      case 'SHIPMENT_CREATED':
-        return 'bg-blue-500/10 text-blue-400 border-blue-500/30';
-      case 'ORDER_DISPATCHED':
-        return 'bg-amber-500/10 text-amber-400 border-amber-500/30';
-      case 'SHIPMENT_STATUS_UPDATED':
-        return 'bg-purple-500/10 text-purple-400 border-purple-500/30';
-      case 'ORDER_CANCELLED':
-        return 'bg-rose-500/10 text-rose-400 border-rose-500/30';
-      case 'SIMULATED_POISON_PILL_DLQ':
-      case 'CORRUPTED_POISON_PILL':
-        return 'bg-red-500/20 text-red-300 border-red-500/50';
-      default:
-        return 'bg-slate-500/10 text-slate-300 border-slate-500/30';
-    }
-  };
-
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Top Banner: EDA Overview */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-slate-900/60 p-6 md:p-8 border border-purple-500/20 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30 mb-3">
-              <Radio className="w-3.5 h-3.5 animate-pulse text-purple-400" />
-              Arquitetura Orientada a Eventos (EDA)
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
-              Monitor de Mensagens & Topologia RabbitMQ
-            </h2>
-            <p className="mt-2 text-slate-300 text-sm md:text-base max-w-3xl leading-relaxed">
-              Comunicação 100% assíncrona entre o <strong>Backend de Pedidos (:8080)</strong> e o <strong>Microsserviço de Frete (:8082)</strong> via RabbitMQ com Topic Exchanges, Filas Duráveis, Rastreabilidade por Correlation ID e Dead Letter Queues (DLQ).
-            </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      
+      {/* Header Minimalista Preto e Branco */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'flex-start', 
+        flexWrap: 'wrap', 
+        gap: '1.5rem',
+        paddingBottom: '1.5rem',
+        borderBottom: '1px solid var(--border-color)'
+      }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span className="tp-badge" style={{ margin: 0 }}>EDA</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Arquitetura Orientada a Eventos
+            </span>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setAutoRefresh(!autoRefresh)}
-              className={`px-4 py-2 rounded-xl text-xs font-medium border flex items-center gap-2 transition-all ${
-                autoRefresh
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-700'
-              }`}
-            >
-              <span className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-emerald-400 animate-ping' : 'bg-slate-500'}`} />
-              {autoRefresh ? 'Auto-refresh Ativo (3s)' : 'Auto-refresh Pausado'}
-            </button>
-
-            <button
-              onClick={handleManualRefresh}
-              disabled={loading}
-              className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold flex items-center gap-2 shadow-lg shadow-purple-600/25 transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Atualizar
-            </button>
-          </div>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 0.5rem 0', color: 'var(--text-primary)' }}>
+            Monitor de Mensagens & Topologia RabbitMQ
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', maxWidth: '820px', lineHeight: 1.6, margin: 0 }}>
+            Comunicação 100% assíncrona entre o <strong>Backend de Pedidos (:8080)</strong> e o <strong>Microsserviço de Frete (:8082)</strong> via RabbitMQ com Topic Exchanges, Filas Duráveis, Rastreabilidade por Correlation ID e Dead Letter Queues (DLQ).
+          </p>
         </div>
 
-        {/* Counter KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-white/10">
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-              <Zap className="w-4 h-4 text-purple-400" />
-              Broker AMQP
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-xl font-bold text-white">RabbitMQ</span>
-              <span className="text-xs text-emerald-400 font-medium">Ativo (:5672)</span>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            onClick={() => setAutoRefresh(!autoRefresh)}
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <span style={{ 
+              width: '8px', 
+              height: '8px', 
+              borderRadius: '50%', 
+              background: autoRefresh ? 'var(--color-success)' : 'var(--text-muted)',
+              display: 'inline-block'
+            }} />
+            {autoRefresh ? 'Auto-refresh (3s)' : 'Auto-refresh Pausado'}
+          </button>
 
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-              <Send className="w-4 h-4 text-emerald-400" />
-              Eventos Publicados
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-emerald-400">{publishedCount}</span>
-              <span className="text-xs text-slate-400">mensagens</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-              <Download className="w-4 h-4 text-blue-400" />
-              Eventos Consumidos
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-blue-400">{receivedCount}</span>
-              <span className="text-xs text-slate-400">mensagens</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-            <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
-              Dead Letter Queue
-            </div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-rose-400">{dlqCount}</span>
-              <span className="text-xs text-slate-400">falhas isoladas</span>
-            </div>
-          </div>
+          <button
+            onClick={handleManualRefresh}
+            disabled={loading}
+            className="btn btn-primary btn-sm"
+          >
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            Atualizar
+          </button>
         </div>
       </div>
 
-      {/* Topologia e DLQ Simulator (Grid de 2 Colunas) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Topologia RabbitMQ */}
-        <div className="lg:col-span-7 bg-slate-900/80 rounded-2xl p-6 border border-slate-800 shadow-xl backdrop-blur-md">
-          <div className="flex items-center gap-2 mb-4">
-            <Layers className="w-5 h-5 text-indigo-400" />
-            <h3 className="text-lg font-bold text-white">Topologia de Exchanges & Filas AMQP</h3>
+      {/* Grid de 4 Cards de Métricas / KPIs */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+        gap: '1rem' 
+      }}>
+        
+        {/* Broker AMQP */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Broker AMQP
+            </span>
+            <Radio size={16} color="var(--text-secondary)" />
           </div>
-
-          <div className="space-y-4 text-sm">
-            {/* Topic Exchange 1 */}
-            <div className="p-4 rounded-xl bg-slate-800/60 border border-indigo-500/20">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-indigo-300">nexus.order.exchange</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Topic Exchange</span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Publicado pelo Backend principal (:8080) quando pedidos sofrem mutações.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-emerald-400 font-semibold">order.created</span> → shipping.order-created.queue
-                </span>
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-amber-400 font-semibold">order.dispatched</span> → shipping.order-dispatched.queue
-                </span>
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-rose-400 font-semibold">order.cancelled</span> → shipping.order-cancelled.queue
-                </span>
-              </div>
-            </div>
-
-            {/* Topic Exchange 2 */}
-            <div className="p-4 rounded-xl bg-slate-800/60 border border-purple-500/20">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-purple-300">nexus.shipping.exchange</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Topic Exchange</span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Publicado pelo Microsserviço de Logística (:8082) ao gerar rastreio e atualizar marcos.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-blue-400 font-semibold">shipping.created</span> → order.shipment-created.queue
-                </span>
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-purple-400 font-semibold">shipping.status-updated</span> → order.shipment-status-updated.queue
-                </span>
-              </div>
-            </div>
-
-            {/* Dead Letter Exchange */}
-            <div className="p-4 rounded-xl bg-slate-800/60 border border-rose-500/20">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-rose-300">nexus.dlx.exchange</span>
-                <span className="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">Dead Letter Exchange</span>
-              </div>
-              <p className="text-xs text-slate-400 mt-1">Isola mensagens venenosas após esgotamento de 3 tentativas de retry exponencial.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-rose-400 font-semibold">order.dlq</span> → order.dead-letter.queue
-                </span>
-                <span className="text-xs font-mono px-2 py-1 rounded bg-slate-900 text-slate-300 border border-slate-700">
-                  <span className="text-rose-400 font-semibold">shipping.dlq</span> → shipping.dead-letter.queue
-                </span>
-              </div>
-            </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+            RabbitMQ
+          </div>
+          <div style={{ marginTop: '0.35rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-success)' }} />
+            <span style={{ color: 'var(--color-success)', fontWeight: 500 }}>Ativo (:5672)</span>
           </div>
         </div>
 
-        {/* Simulador Interativo de DLQ & Resiliência */}
-        <div className="lg:col-span-5 bg-slate-900/80 rounded-2xl p-6 border border-slate-800 shadow-xl backdrop-blur-md flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <ShieldAlert className="w-5 h-5 text-rose-400" />
-              <h3 className="text-lg font-bold text-white">Laboratório de Resiliência (DLQ)</h3>
+        {/* Eventos Publicados */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Eventos Publicados
+            </span>
+            <Send size={16} color="var(--text-secondary)" />
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+            {publishedCount}
+          </div>
+          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            mensagens enviadas
+          </div>
+        </div>
+
+        {/* Eventos Consumidos */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Eventos Consumidos
+            </span>
+            <Download size={16} color="var(--text-secondary)" />
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+            {receivedCount}
+          </div>
+          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            processados com sucesso
+          </div>
+        </div>
+
+        {/* Dead Letter Queue */}
+        <div className="glass-card" style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Dead Letter Queue
+            </span>
+            <ShieldAlert size={16} color="var(--text-secondary)" />
+          </div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+            {dlqCount}
+          </div>
+          <div style={{ marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+            falhas isoladas em DLQ
+          </div>
+        </div>
+
+      </div>
+
+      {/* Grid Principal: Topologia AMQP e Simulador de DLQ */}
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', 
+        gap: '1.5rem',
+        alignItems: 'start'
+      }}>
+        
+        {/* Card: Topologia de Exchanges & Filas */}
+        <div className="glass-card" style={{ padding: '1.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1.25rem' }}>
+            <Layers size={20} color="var(--text-primary)" />
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+              Topologia de Exchanges & Filas AMQP
+            </h3>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            
+            {/* Exchange 1 */}
+            <div style={{ 
+              padding: '1rem', 
+              background: '#121214', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: 'var(--radius-md)' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  nexus.order.exchange
+                </span>
+                <span className="badge" style={{ background: '#18181b', border: '1px solid #27272a', color: '#a1a1aa', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+                  Topic Exchange
+                </span>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0' }}>
+                Publicado pelo Backend (:8080) quando pedidos sofrem mutações.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>order.created</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ shipping.order-created.queue</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>order.dispatched</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ shipping.order-dispatched.queue</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>order.cancelled</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ shipping.order-cancelled.queue</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-              Demonstre o padrão de <strong>Dead Letter Queue (DLQ)</strong> e tratamento de mensagens venenosas (Poison Pills). Ao disparar a simulação, uma mensagem com carga inválida é enviada e roteada para isolamento sem travar os consumidores.
+
+            {/* Exchange 2 */}
+            <div style={{ 
+              padding: '1rem', 
+              background: '#121214', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: 'var(--radius-md)' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  nexus.shipping.exchange
+                </span>
+                <span className="badge" style={{ background: '#18181b', border: '1px solid #27272a', color: '#a1a1aa', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+                  Topic Exchange
+                </span>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0' }}>
+                Publicado pelo Microsserviço de Logística (:8082) ao gerar rastreio e atualizar marcos.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>shipping.created</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ order.shipment-created.queue</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>shipping.status-updated</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ order.shipment-status-updated.queue</span>
+                </div>
+              </div>
+            </div>
+
+            {/* DLX Exchange */}
+            <div style={{ 
+              padding: '1rem', 
+              background: '#121214', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: 'var(--radius-md)' 
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                <span style={{ fontFamily: 'monospace', fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                  nexus.dlx.exchange
+                </span>
+                <span className="badge" style={{ background: '#18181b', border: '1px solid #27272a', color: '#a1a1aa', fontFamily: 'monospace', fontSize: '0.7rem' }}>
+                  Dead Letter Exchange
+                </span>
+              </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', margin: '0 0 0.75rem 0' }}>
+                Isola mensagens venenosas após esgotamento de 3 tentativas de retry exponencial.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>order.dlq</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ order.dead-letter.queue</span>
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  padding: '0.4rem 0.6rem', 
+                  background: '#09090b', 
+                  borderRadius: 'var(--radius-sm)', 
+                  border: '1px solid #1f1f23',
+                  fontFamily: 'monospace', 
+                  fontSize: '0.75rem' 
+                }}>
+                  <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>shipping.dlq</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>→ shipping.dead-letter.queue</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Card: Laboratório de Resiliência (DLQ) */}
+        <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
+              <ShieldAlert size={20} color="var(--text-primary)" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+                Laboratório de Resiliência (DLQ)
+              </h3>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 1.25rem 0' }}>
+              Demonstre o padrão de <strong>Dead Letter Queue (DLQ)</strong> e isolamento de mensagens corrompidas (Poison Pills). Ao disparar a simulação, uma mensagem com carga inválida é enviada e roteada para isolamento sem travar os consumidores.
             </p>
 
-            <form onSubmit={handleSimulateDlq} className="space-y-3">
+            <form onSubmit={handleSimulateDlq} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Fila Alvo de Teste:</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                  Fila Alvo de Teste:
+                </label>
                 <select
                   value={dlqTarget}
                   onChange={(e) => setDlqTarget(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem 0.85rem',
+                    background: '#09090b',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem',
+                    outline: 'none'
+                  }}
                 >
                   <option value="order">order.dead-letter.queue (Backend de Pedidos)</option>
                   <option value="shipping">shipping.dead-letter.queue (Microsserviço de Logística)</option>
@@ -311,74 +459,125 @@ export function EventMonitorTab() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Motivo da Falha Simulada:</label>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                  Motivo da Falha Simulada:
+                </label>
                 <input
                   type="text"
                   value={dlqReason}
                   onChange={(e) => setDlqReason(e.target.value)}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
-                  placeholder="Ex: Falha de integridade referencial ou erro na serialização"
+                  placeholder="Ex: Falha de validação ou payload corrompido"
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem 0.85rem',
+                    background: '#09090b',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--text-primary)',
+                    fontSize: '0.85rem',
+                    outline: 'none'
+                  }}
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSimulatingDlq}
-                className="w-full mt-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white text-xs font-bold shadow-lg shadow-rose-600/30 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: '0.5rem', padding: '0.75rem 1rem' }}
               >
-                <AlertTriangle className="w-4 h-4" />
+                <AlertTriangle size={15} />
                 {isSimulatingDlq ? 'Injetando no Broker...' : 'Disparar Simulação para DLQ'}
               </button>
             </form>
           </div>
 
           {lastDlqResult && (
-            <div className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs">
-              <div className="flex items-center gap-1.5 text-rose-300 font-semibold mb-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+            <div style={{ 
+              marginTop: '1.25rem', 
+              padding: '1rem', 
+              background: '#121214', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.8rem' 
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-success)', fontWeight: 600, marginBottom: '0.35rem' }}>
+                <CheckCircle2 size={16} />
                 Mensagem roteada para DLQ com sucesso
               </div>
-              <div className="font-mono text-slate-400 truncate">
-                CorrelationId: {lastDlqResult.correlationId}
+              <div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                CorrelationId: <span style={{ color: 'var(--text-primary)' }}>{lastDlqResult.correlationId}</span>
               </div>
-              <div className="font-mono text-slate-400">
-                Fila: {lastDlqResult.targetQueue}
+              <div style={{ fontFamily: 'monospace', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                Fila: <span style={{ color: 'var(--text-primary)' }}>{lastDlqResult.targetQueue}</span>
               </div>
             </div>
           )}
         </div>
+
       </div>
 
-      {/* Live Event Stream / Filtros e Linha do Tempo */}
-      <div className="bg-slate-900/80 rounded-2xl p-6 border border-slate-800 shadow-xl backdrop-blur-md">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+      {/* Stream de Eventos em Tempo Real */}
+      <div className="glass-card" style={{ padding: '1.75rem' }}>
+        
+        {/* Barra Superior do Feed: Título e Controles de Busca */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          flexWrap: 'wrap', 
+          gap: '1rem',
+          paddingBottom: '1.25rem',
+          borderBottom: '1px solid var(--border-color)'
+        }}>
           <div>
-            <div className="flex items-center gap-2">
-              <Workflow className="w-5 h-5 text-purple-400" />
-              <h3 className="text-lg font-bold text-white">Fluxo de Eventos em Tempo Real</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <Workflow size={20} color="var(--text-primary)" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+                Fluxo de Eventos em Tempo Real
+              </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-1">Trilha cronológica unificada de eventos emitidos e consumidos pelos microsserviços.</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: '0.25rem 0 0 0' }}>
+              Trilha cronológica unificada de eventos emitidos e consumidos pelos microsserviços.
+            </p>
           </div>
 
-          {/* Filtros e Barra de Pesquisa */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ position: 'relative', width: '240px' }}>
+              <Search size={14} color="var(--text-muted)" style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)' }} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar por correlação, tipo, rota..."
-                className="pl-9 pr-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 w-64"
+                placeholder="Buscar correlação, tipo..."
+                style={{
+                  paddingLeft: '2.2rem',
+                  paddingRight: '0.75rem',
+                  paddingTop: '0.45rem',
+                  paddingBottom: '0.45rem',
+                  fontSize: '0.8rem',
+                  background: '#121214',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--text-primary)'
+                }}
               />
             </div>
 
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-purple-500"
+              style={{
+                width: 'auto',
+                padding: '0.45rem 0.75rem',
+                fontSize: '0.8rem',
+                background: '#121214',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-primary)'
+              }}
             >
-              <option value="ALL">Todos os Tipos de Eventos</option>
+              <option value="ALL">Todos os Tipos</option>
               <option value="ORDER_CREATED">ORDER_CREATED</option>
               <option value="SHIPMENT_CREATED">SHIPMENT_CREATED</option>
               <option value="ORDER_DISPATCHED">ORDER_DISPATCHED</option>
@@ -390,11 +589,14 @@ export function EventMonitorTab() {
         </div>
 
         {/* Lista de Eventos */}
-        <div className="mt-6 space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1.25rem' }}>
           {filteredEvents.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 text-sm">
-              <ArrowRightLeft className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-              Nenhum evento registrado até o momento. Realize um pedido no Catálogo ou despache uma encomenda para ver os eventos fluindo no RabbitMQ!
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <ArrowRightLeft size={32} color="var(--text-muted)" style={{ margin: '0 auto 0.75rem auto' }} />
+              <div>Nenhum evento registrado até o momento.</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                Realize um pedido no Catálogo ou despache uma encomenda para ver os eventos fluindo no RabbitMQ!
+              </div>
             </div>
           ) : (
             filteredEvents.map((evt) => {
@@ -405,93 +607,147 @@ export function EventMonitorTab() {
               return (
                 <div
                   key={`${evt.id}-${evt.eventId}`}
-                  className={`p-4 rounded-xl border transition-all ${
-                    isDlq
-                      ? 'bg-red-950/20 border-red-500/30 hover:border-red-500/50'
-                      : isPublished
-                      ? 'bg-slate-800/40 border-slate-700/60 hover:border-slate-600'
-                      : 'bg-indigo-950/20 border-indigo-500/30 hover:border-indigo-500/50'
-                  }`}
+                  style={{
+                    padding: '1rem',
+                    background: '#121214',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-md)',
+                    transition: 'border-color var(--transition-fast)'
+                  }}
                 >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                    <div className="flex items-start md:items-center gap-3">
-                      <div className={`p-2 rounded-lg ${
-                        isDlq 
-                          ? 'bg-red-500/20 text-red-400' 
-                          : isPublished 
-                          ? 'bg-emerald-500/20 text-emerald-400' 
-                          : 'bg-blue-500/20 text-blue-400'
-                      }`}>
-                        {isDlq ? <ShieldAlert className="w-4 h-4" /> : isPublished ? <Send className="w-4 h-4" /> : <Download className="w-4 h-4" />}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                      <div style={{ 
+                        padding: '0.5rem', 
+                        borderRadius: 'var(--radius-sm)', 
+                        background: '#18181b', 
+                        border: '1px solid var(--border-color)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginTop: '2px'
+                      }}>
+                        {isDlq ? (
+                          <ShieldAlert size={16} color="var(--color-danger)" />
+                        ) : isPublished ? (
+                          <Send size={16} color="var(--text-primary)" />
+                        ) : (
+                          <Download size={16} color="var(--text-primary)" />
+                        )}
                       </div>
 
                       <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded text-xs font-mono font-bold border ${getEventBadgeClass(evt.eventType)}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span style={{ 
+                            fontFamily: 'monospace', 
+                            fontSize: '0.8rem', 
+                            fontWeight: 700, 
+                            color: 'var(--text-primary)',
+                            padding: '0.15rem 0.45rem',
+                            background: '#18181b',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: 'var(--radius-sm)'
+                          }}>
                             {evt.eventType}
                           </span>
-                          <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                            isPublished ? 'bg-emerald-500/10 text-emerald-300' : 'bg-blue-500/10 text-blue-300'
-                          }`}>
-                            {evt.direction === 'PUBLISHED' ? 'PUBLICADO' : 'RECEBIDO / CONSUMIDO'}
+
+                          <span className={isPublished ? 'badge' : 'badge'} style={{
+                            background: '#18181b',
+                            border: '1px solid #27272a',
+                            color: isPublished ? '#a1a1aa' : '#fafafa',
+                            fontFamily: 'monospace',
+                            fontSize: '0.7rem'
+                          }}>
+                            {isPublished ? 'PUBLICADO' : 'RECEBIDO / CONSUMIDO'}
                           </span>
-                          {evt.status === 'DLQ' && (
-                            <span className="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+
+                          {isDlq && (
+                            <span className="badge badge-danger" style={{ fontFamily: 'monospace', fontSize: '0.7rem' }}>
                               DLQ ISOLADO
                             </span>
                           )}
                         </div>
 
-                        <p className="text-xs text-slate-300 mt-1 font-medium">{evt.details || 'Sem descrição adicional'}</p>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: '0.35rem 0 0 0' }}>
+                          {evt.details || 'Sem descrição adicional'}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       {evt.correlationId && (
-                        <div className="flex items-center gap-1 font-mono bg-slate-900 px-2 py-1 rounded border border-slate-700/60 text-slate-300">
-                          <span className="text-slate-500">corr:</span>
-                          <span className="text-purple-300">{evt.correlationId}</span>
+                        <div style={{ 
+                          fontFamily: 'monospace', 
+                          padding: '0.2rem 0.45rem', 
+                          background: '#09090b', 
+                          borderRadius: 'var(--radius-sm)', 
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--text-secondary)'
+                        }}>
+                          <span style={{ color: 'var(--text-muted)' }}>corr: </span>
+                          <span style={{ color: 'var(--text-primary)' }}>{evt.correlationId}</span>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-slate-500" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <Clock size={13} color="var(--text-muted)" />
                         <span>{new Date(evt.timestamp).toLocaleTimeString('pt-BR')}</span>
                       </div>
 
                       {evt.payload && (
                         <button
                           onClick={() => setExpandedPayloadId(isExpanded ? null : evt.id)}
-                          className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center gap-1 transition-colors"
+                          className="btn btn-secondary btn-sm"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                         >
-                          <Code2 className="w-3 h-3 text-indigo-400" />
+                          <Code2 size={12} />
                           <span>Payload</span>
-                          {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                         </button>
                       )}
                     </div>
                   </div>
 
                   {/* Detalhes de roteamento */}
-                  <div className="mt-2.5 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
+                  <div style={{ 
+                    marginTop: '0.65rem', 
+                    paddingTop: '0.65rem', 
+                    borderTop: '1px solid #1f1f23', 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '1.25rem', 
+                    fontSize: '0.75rem', 
+                    fontFamily: 'monospace', 
+                    color: 'var(--text-muted)' 
+                  }}>
                     <div>
-                      <span className="text-slate-500">Exchange: </span>
-                      <span className="text-slate-300 font-semibold">{evt.exchange || 'N/A'}</span>
+                      <span>Exchange: </span>
+                      <span style={{ color: 'var(--text-primary)' }}>{evt.exchange || 'N/A'}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500">Routing Key: </span>
-                      <span className="text-slate-300 font-semibold">{evt.routingKey || 'N/A'}</span>
+                      <span>Routing Key: </span>
+                      <span style={{ color: 'var(--text-primary)' }}>{evt.routingKey || 'N/A'}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500">EventId: </span>
-                      <span className="text-slate-500">{evt.eventId}</span>
+                      <span>EventId: </span>
+                      <span style={{ color: 'var(--text-muted)' }}>{evt.eventId}</span>
                     </div>
                   </div>
 
                   {/* Visualizador de Payload JSON Expandível */}
                   {isExpanded && evt.payload && (
-                    <div className="mt-3 p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs font-mono text-slate-300 overflow-x-auto">
-                      <pre className="whitespace-pre-wrap break-all">
+                    <div style={{ 
+                      marginTop: '0.75rem', 
+                      padding: '0.85rem', 
+                      background: '#09090b', 
+                      borderRadius: 'var(--radius-sm)', 
+                      border: '1px solid var(--border-color)', 
+                      fontSize: '0.75rem', 
+                      fontFamily: 'monospace', 
+                      color: 'var(--text-primary)',
+                      overflowX: 'auto' 
+                    }}>
+                      <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
                         {(() => {
                           try {
                             return JSON.stringify(JSON.parse(evt.payload), null, 2);
@@ -508,6 +764,7 @@ export function EventMonitorTab() {
           )}
         </div>
       </div>
+
     </div>
   );
 }

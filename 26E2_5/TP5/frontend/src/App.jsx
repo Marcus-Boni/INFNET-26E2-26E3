@@ -81,19 +81,28 @@ function App() {
     }
   };
 
-  const loadProducts = async (query = '') => {
+  const loadProducts = async (query = '', isAutoRetry = false) => {
     try {
       const data = await fetchProductsApi(query);
-      setProducts(data);
-      const newQuantities = {};
-      data.forEach(p => {
-        newQuantities[p.id] = p.stock > 0 ? 1 : 0;
-      });
-      setQuantities(newQuantities);
+      if (Array.isArray(data) && data.length > 0) {
+        setProducts(data);
+        const newQuantities = {};
+        data.forEach(p => {
+          newQuantities[p.id] = p.stock > 0 ? 1 : 0;
+        });
+        setQuantities(newQuantities);
+      } else if (!isAutoRetry && !query) {
+        setTimeout(() => loadProducts('', true), 2500);
+      }
     } catch (err) {
-      showToast(err.message || 'Não foi possível conectar ao servidor backend.', 'error');
+      if (!isAutoRetry) {
+        setTimeout(() => loadProducts(query, true), 3000);
+      } else {
+        showToast(err.message || 'Não foi possível conectar ao servidor backend.', 'error');
+      }
     }
   };
+
 
   const loadOrders = async () => {
     try {

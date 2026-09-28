@@ -15,7 +15,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/events")
-@CrossOrigin(origins = "*")
 public class EventMonitoringController {
 
     private static final Logger log = LoggerFactory.getLogger(EventMonitoringController.class);

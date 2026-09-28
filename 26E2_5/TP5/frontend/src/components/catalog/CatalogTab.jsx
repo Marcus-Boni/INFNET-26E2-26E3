@@ -35,11 +35,22 @@ export function CatalogTab({
         </div>
 
         {products.length === 0 ? (
-          <EmptyState 
-            icon={PackageSearch} 
-            message="Nenhum produto encontrado correspondente à busca." 
-          />
+          <div style={{ textAlign: 'center' }}>
+            <EmptyState 
+              icon={PackageSearch} 
+              message="Nenhum produto encontrado correspondente à busca." 
+            />
+            <button 
+              type="button" 
+              className="btn btn-secondary" 
+              style={{ marginTop: '1rem' }}
+              onClick={onSearchSubmit}
+            >
+              Recarregar Catálogo
+            </button>
+          </div>
         ) : (
+
           <div className="products-grid">
             {products.map(product => (
               <ProductCard

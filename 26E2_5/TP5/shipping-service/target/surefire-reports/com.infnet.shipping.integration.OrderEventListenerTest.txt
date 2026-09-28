@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.infnet.shipping.integration.OrderEventListenerTest
--------------------------------------------------------------------------------
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.773 s -- in com.infnet.shipping.integration.OrderEventListenerTest
