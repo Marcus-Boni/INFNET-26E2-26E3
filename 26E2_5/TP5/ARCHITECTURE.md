@@ -1,6 +1,10 @@
 # Documentação de Arquitetura: Nexus Store (TP5)
 ## Conteinerização, Orquestração com Kubernetes, Observabilidade e CI/CD
 
+> 🎥 **Vídeo de Demonstração (Google Drive):**  
+> [Clique aqui para assistir à demonstração em vídeo da execução do TP5](https://drive.google.com/file/d/1khsR6jYwMQvs_zZ5BL5l68umr2OhTjTu/view?usp=sharing)  
+> **Link direto:** `https://drive.google.com/file/d/1khsR6jYwMQvs_zZ5BL5l68umr2OhTjTu/view?usp=sharing`
+
 Este documento consolida a arquitetura de operações e entrega contínua desenvolvida no **TP5**, preparando o ecossistema de microsserviços da plataforma **Nexus Store** (evoluído a partir da arquitetura orientada a eventos do TP4) para ambientes de produção resilientes, escaláveis e altamente observáveis.
 
 ---

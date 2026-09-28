@@ -13,7 +13,8 @@ import {
   Zap,
   GitBranch,
   ShieldCheck,
-  CheckCircle2
+  CheckCircle2,
+  Play
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { 
@@ -124,6 +125,17 @@ export function DevOpsObservabilityTab() {
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             Sondar Probes
           </button>
+
+          <a
+            href="https://drive.google.com/file/d/1khsR6jYwMQvs_zZ5BL5l68umr2OhTjTu/view?usp=sharing"
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-secondary btn-sm"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}
+          >
+            <Play size={12} />
+            Vídeo Demo
+          </a>
         </div>
       </div>
 
