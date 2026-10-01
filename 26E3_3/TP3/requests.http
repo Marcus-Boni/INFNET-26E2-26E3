@@ -1,0 +1,159 @@
+### ==============================================================================
+### TECHMARKET TP3 - SUÍTE COMPLETA DE TESTES HTTP (AUTENTICAÇÃO & ROTAS PROTEGIDAS)
+### ==============================================================================
+### Trabalho Prático 3 - Arquitetura de Microsserviços
+### Instituição: Instituto Infnet | Curso: Engenharia de Software
+### Aluno: Marcus Boni | Disciplina: Engenharia Disciplinada
+### ==============================================================================
+
+# Definição das URLs Base dos Microsserviços
+@AUTH_URL = http://localhost:8080
+@ORDER_URL = http://localhost:8082
+
+### ==============================================================================
+### FLUXO OBRIGATÓRIO DE DEMONSTRAÇÃO E AVALIAÇÃO (ITENS 1 A 7)
+### ==============================================================================
+
+### ------------------------------------------------------------------------------
+### PASSO 1: TENTATIVA DE ACESSO A ROTA PROTEGIDA SEM AUTENTICAÇÃO
+### REQUISITO: Deve ser REJEITADA com HTTP 401 Unauthorized
+### ------------------------------------------------------------------------------
+# @name tentarAcessoSemToken
+GET {{ORDER_URL}}/api/pedidos
+Accept: application/json
+
+### (Variação do Passo 1 em /orders)
+GET {{ORDER_URL}}/orders
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### PASSO 2: TENTATIVA DE LOGIN COM CREDENCIAIS INVÁLIDAS
+### REQUISITO: Rejeição de credenciais inválidas com HTTP 401 Unauthorized
+### ------------------------------------------------------------------------------
+# @name loginCredenciaisInvalidas
+POST {{AUTH_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "usuario.inexistente@techmarket.com",
+  "password": "senha_totalmente_errada"
+}
+
+
+### ------------------------------------------------------------------------------
+### PASSO 3: AUTENTICAÇÃO REALIZADA COM SUCESSO E OBTENÇÃO DOS TOKENS
+### REQUISITO: Retorna HTTP 200 OK contendo Access Token (JWT) e Refresh Token
+### Usuário Padrão Admin: admin@techmarket.com / admin123
+### ------------------------------------------------------------------------------
+# @name loginAdminSucesso
+POST {{AUTH_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin@techmarket.com",
+  "password": "admin123"
+}
+
+### Variáveis para armazenar o token retornado pelo login:
+@adminAccessToken = {{loginAdminSucesso.response.body.accessToken}}
+@adminRefreshToken = {{loginAdminSucesso.response.body.refreshToken}}
+
+
+### ------------------------------------------------------------------------------
+### PASSO 4: ACESSO A ROTA PROTEGIDA UTILIZANDO O TOKEN JWT VÁLIDO
+### REQUISITO: Acesso concedido com sucesso (HTTP 200 OK)
+### ------------------------------------------------------------------------------
+# @name listarPedidosComToken
+GET {{ORDER_URL}}/api/pedidos
+Authorization: Bearer {{adminAccessToken}}
+Accept: application/json
+
+
+### ------------------------------------------------------------------------------
+### PASSO 5: CADASTRO DE NOVO RECURSO EM ROTA PROTEGIDA (POST /api/pedidos)
+### REQUISITO: Processamento autorizado normalmente com HTTP 201 Created
+### ------------------------------------------------------------------------------
+# @name criarPedidoComToken
+POST {{ORDER_URL}}/api/pedidos
+Authorization: Bearer {{adminAccessToken}}
+Content-Type: application/json
+
+{
+  "customerName": "Marcus Boni",
+  "productId": "10",
+  "productName": "Monitor Gamer Alienware 27 QD-OLED 360Hz",
+  "quantity": 1,
+  "unitPrice": 4899.90
+}
+
+
+### ------------------------------------------------------------------------------
+### PASSO 6: UTILIZAÇÃO DO ENDPOINT DE REFRESH COM O REFRESH TOKEN
+### REQUISITO: Renovação com sucesso (HTTP 200 OK) gerando NOVO Token de Acesso
+### Rota: POST /auth/refresh (ou /api/auth/refresh)
+### ------------------------------------------------------------------------------
+# @name renovarTokenRefresh
+POST {{AUTH_URL}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{adminRefreshToken}}"
+}
+
+### Variável para armazenar o novo access token gerado pelo refresh:
+@novoAccessToken = {{renovarTokenRefresh.response.body.accessToken}}
+
+
+### ------------------------------------------------------------------------------
+### PASSO 7: ACESSO A ROTA PROTEGIDA UTILIZANDO O NOVO TOKEN OBTIDO VIA REFRESH
+### REQUISITO: Comprova que o token renovado é 100% funcional (HTTP 200 OK)
+### ------------------------------------------------------------------------------
+# @name testarAcessoComNovoToken
+GET {{ORDER_URL}}/api/pedidos/1
+Authorization: Bearer {{novoAccessToken}}
+Accept: application/json
+
+
+### ==============================================================================
+### TESTES ADICIONAIS: ROTAS PÚBLICAS, REGISTRO E PERFIL DE USUÁRIO
+### ==============================================================================
+
+### A) Endpoint Público do order-service (Não requer Token)
+GET {{ORDER_URL}}/api/pedidos/public/info
+Accept: application/json
+
+### B) Health Check do order-service (Público)
+GET {{ORDER_URL}}/actuator/health
+
+### C) Informações do auth-service (Público)
+GET {{AUTH_URL}}/auth/info
+Accept: application/json
+
+### D) Registrar um Novo Usuário no auth-service (POST /auth/register)
+# @name registrarNovoUsuario
+POST {{AUTH_URL}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Novo Engenheiro Tech",
+  "username": "engenheiro@techmarket.com",
+  "email": "engenheiro@techmarket.com",
+  "password": "senhaForte2026!",
+  "roles": ["ROLE_USER"]
+}
+
+### E) Consultar Perfil Logado no auth-service (GET /auth/me - Rota Protegida)
+GET {{AUTH_URL}}/auth/me
+Authorization: Bearer {{adminAccessToken}}
+Accept: application/json
+
+### F) Validar Token JWT no auth-service (GET /auth/validate - Público)
+GET {{AUTH_URL}}/auth/validate
+Authorization: Bearer {{adminAccessToken}}
+Accept: application/json
+
+### G) Teste com Token JWT Inválido/Adulterado (Deve retornar 401 Unauthorized)
+GET {{ORDER_URL}}/api/pedidos
+Authorization: Bearer token_falso_adulterado_invalido_xyz123
+Accept: application/json

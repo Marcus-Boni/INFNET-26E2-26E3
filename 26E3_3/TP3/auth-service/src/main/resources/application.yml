@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: auth-service
+
+# Configurações do Mecanismo JWT (JSON Web Token)
+jwt:
+  # Chave secreta compartilhada para assinatura HMAC-SHA256 (mínimo de 256 bits)
+  secret: techmarket-super-secret-jwt-key-for-authentication-and-authorization-2026-infnet-disciplined-software-engineering
+  # Tempo de expiração do Token de Acesso (Access Token): 15 minutos (900000 ms)
+  access-token-expiration-ms: 900000
+  # Tempo de expiração do Token de Renovação (Refresh Token): 7 dias (604800000 ms)
+  refresh-token-expiration-ms: 604800000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

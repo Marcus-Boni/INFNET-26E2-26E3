@@ -1,0 +1,19 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: order-service
+
+# Configuração do Validador JWT (Mesma chave secreta do auth-service para validação distribuída)
+jwt:
+  secret: techmarket-super-secret-jwt-key-for-authentication-and-authorization-2026-infnet-disciplined-software-engineering
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
