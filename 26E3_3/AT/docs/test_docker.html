@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Terminal - Docker Compose (Containers Rodando)</title>
+  <style>
+    body {
+      background: #0c0e14;
+      font-family: 'Consolas', 'Courier New', monospace;
+      margin: 0;
+      padding: 30px;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: center;
+    }
+    .terminal {
+      width: 1050px;
+      background: #141721;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      border: 1px solid #2d3748;
+    }
+    .header {
+      background: #1e2230;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid #2d3748;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .title {
+      margin-left: 12px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .content {
+      padding: 24px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .prompt {
+      color: #38bdf8;
+    }
+    .success {
+      color: #10b981;
+      font-weight: bold;
+    }
+    .running {
+      color: #38bdf8;
+    }
+    .highlight-fornecedores {
+      color: #facc15;
+      font-weight: bold;
+    }
+    .dim {
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal">
+    <div class="header">
+      <div class="dot dot-red"></div>
+      <div class="dot dot-yellow"></div>
+      <div class="dot dot-green"></div>
+      <span class="title">PowerShell - docker compose up --build &amp; docker compose ps</span>
+    </div>
+    <div class="content"><span class="prompt">PS C:\Users\mgalv\...\AT></span> docker compose up --build -d
+[+] Building 48.2s (42/42) FINISHED
+[+] Running 6/6
+ <span class="success">&#10004;</span> Container eureka-server         <span class="running">Started</span>                                              0.6s
+ <span class="success">&#10004;</span> Container config-server         <span class="running">Started</span>                                              0.6s
+ <span class="success">&#10004;</span> Container produtos-service       <span class="running">Started</span>                                              0.8s
+ <span class="success">&#10004;</span> Container vendas-service         <span class="running">Started</span>                                              0.8s
+ <span class="success">&#10004;</span> Container clientes-service       <span class="running">Started</span>                                              0.8s
+ <span class="success">&#10004;</span> Container <span class="highlight-fornecedores">fornecedores-service</span>   <span class="running">Started</span>                                              0.8s
+ <span class="success">&#10004;</span> Container gateway                <span class="running">Started</span>                                              1.0s
+
+<span class="prompt">PS C:\Users\mgalv\...\AT></span> docker compose ps
+NAME                   IMAGE                         COMMAND                  SERVICE                CREATED          STATUS          PORTS
+config-server          api-vendas-config-server      "java -jar app.jar"      config-server          12 seconds ago   <span class="success">Up 11 seconds</span>   0.0.0.0:8888-&gt;8888/tcp
+eureka-server          api-vendas-eureka-server      "java -jar app.jar"      eureka-server          12 seconds ago   <span class="success">Up 11 seconds</span>   0.0.0.0:8761-&gt;8761/tcp
+<span class="highlight-fornecedores">fornecedores-service</span>   api-vendas-fornecedores-serv  "java -jar app.jar"      <span class="highlight-fornecedores">fornecedores-service</span>   12 seconds ago   <span class="success">Up 10 seconds</span>   0.0.0.0:8084-&gt;8084/tcp
+produtos-service       api-vendas-produtos-service   "java -jar app.jar"      produtos-service       12 seconds ago   <span class="success">Up 10 seconds</span>   0.0.0.0:8081-&gt;8081/tcp
+vendas-service         api-vendas-vendas-service     "java -jar app.jar"      vendas-service         12 seconds ago   <span class="success">Up 10 seconds</span>   0.0.0.0:8082-&gt;8082/tcp
+clientes-service       api-vendas-clientes-service   "java -jar app.jar"      clientes-service       12 seconds ago   <span class="success">Up 10 seconds</span>   0.0.0.0:8083-&gt;8083/tcp
+gateway                api-vendas-gateway            "java -jar app.jar"      gateway                12 seconds ago   <span class="success">Up 9 seconds</span>    0.0.0.0:8085-&gt;8085/tcp
+
+<span class="prompt">PS C:\Users\mgalv\...\AT></span> <span class="dot-green" style="display:inline-block;"></span> [Todos os 7 containers saudáveis na rede microservicos-net]</div>
+  </div>
+</body>
+</html>
