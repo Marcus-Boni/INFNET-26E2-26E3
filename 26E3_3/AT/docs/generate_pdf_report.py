@@ -375,10 +375,10 @@ def create_report(output_pdf_path, evidencias_dir):
         14,
         "Exercício 12 — Pipeline de Integração Contínua com GitHub Actions",
         "Crie um workflow do GitHub Actions no seu repositório, dentro da pasta .github/workflows, que a cada push baixe o código do repositório, compile o seu fornecedores-service com o Maven. Faça o commit e o push do arquivo, que o GitHub executa o pipeline sozinho. Para testar, abra a aba Actions do seu repositório e acompanhe a execução. Entregue um print do pipeline concluído com o check verde.",
-        "Foi configurado o workflow .github/workflows/fornecedores-service.yml disparado em eventos de push e pull_request. O pipeline executa em runner Ubuntu mais recente, faz checkout do código, configura o JDK 17 com cache do Maven e compila o fornecedores-service através de 'mvn clean package -DskipTests', completando com sucesso em 31s.",
+        "Foi configurado o workflow .github/workflows/fornecedores-service.yml disparado em eventos de push e pull_request. O pipeline executa em runner Ubuntu mais recente, faz checkout do código, configura o JDK 17 com cache do Maven e compila o fornecedores-service através de 'mvn clean package -DskipTests', completando com sucesso em 46s (job em 42s).",
         "12-github-actions-green.png",
-        "Pipeline do GitHub Actions no repositório Marcus-Boni/api-vendas concluído com o check verde de sucesso.",
-        "Run ID: 37090783524 · Job: Build fornecedores-service · Duração: 31 segundos · Status: SUCCESS"
+        "Pipeline do GitHub Actions no repositório Marcus-Boni/INFNET-26E2-26E3 concluído com o check verde de sucesso.",
+        "Run ID: 37389384525 · Job: Build fornecedores-service · Duração: 46 segundos · Status: SUCCESS"
     )
 
     doc.save(output_pdf_path)
@@ -388,5 +388,5 @@ def create_report(output_pdf_path, evidencias_dir):
 if __name__ == "__main__":
     base_dir = r"c:\Users\mgalv\Projetos-Programacao\Projetos-Faculdade\Engenharia-Disciplinada-Periodo7\INFNET-26E2-26E3\26E3_3\AT"
     evidencias = os.path.join(base_dir, "docs", "evidencias")
-    out_pdf = os.path.join(base_dir, "Marcus_Boni_DR3_AT.pdf")
+    out_pdf = os.path.join(base_dir, "docs", "Marcus_Boni_DR3_AT.pdf")
     create_report(out_pdf, evidencias)

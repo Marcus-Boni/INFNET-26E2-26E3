@@ -192,8 +192,8 @@ flowchart TD
 
 ### Exercício 12: Pipeline de CI Automatizado no GitHub Actions
 - **Ação:** Elaboração do workflow `.github/workflows/fornecedores-service.yml` acionado em eventos de push e pull request em qualquer branch. O workflow configura JDK 17 com cache Maven e executa `mvn clean package -DskipTests -B`.
-- **Execução:** O workflow foi executado no repositório GitHub `Marcus-Boni/api-vendas` com sucesso absoluto em 31 segundos.
-- **Evidência:** [`12-github-actions-green.png`](./docs/evidencias/12-github-actions-green.png) — Pipeline concluído com o selo verde de sucesso (Run ID `37090783524`).
+- **Execução:** O workflow foi executado no repositório GitHub `Marcus-Boni/INFNET-26E2-26E3` com sucesso absoluto em 46 segundos (job concluído em 42s).
+- **Evidência:** [`12-github-actions-green.png`](./docs/evidencias/12-github-actions-green.png) — Pipeline concluído com o selo verde de sucesso (Run ID `37389384525`).
 
 ---
 
