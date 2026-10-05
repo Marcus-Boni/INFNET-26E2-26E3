@@ -1,17 +1,16 @@
-# ==============================================================================
-# NOTA SOBRE A ESTRUTURA DO REPOSITÓRIO:
-# O GitHub Actions exige que os arquivos de workflow fiquem obrigatoriamente
-# na raiz do repositório Git (.github/workflows/tp5-ci.yml).
-# Este arquivo é mantido aqui dentro de 26E2_5/TP5 como referência local da entrega.
-# O workflow ativo e executado pelo GitHub está em /.github/workflows/tp5-ci.yml
-# ==============================================================================
-name: Nexus Store CI - Continuous Integration Pipeline
+name: Nexus Store CI - TP5 Continuous Integration Pipeline
 
 on:
   push:
     branches: [ main, master, develop ]
+    paths:
+      - '26E2_5/TP5/**'
+      - '.github/workflows/tp5-*.yml'
   pull_request:
     branches: [ main, master, develop ]
+    paths:
+      - '26E2_5/TP5/**'
+      - '.github/workflows/tp5-*.yml'
   workflow_dispatch:
 
 jobs:
@@ -28,16 +27,18 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
+          cache-dependency-path: '26E2_5/TP5/backend/pom.xml'
 
       - name: Executar Testes Automatizados do Backend
-        run: mvn -B clean test --file backend/pom.xml
+        working-directory: 26E2_5/TP5/backend
+        run: mvn -B clean test
 
       - name: Publicar Relatório de Testes Surefire
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: backend-test-results
-          path: backend/target/surefire-reports/
+          path: 26E2_5/TP5/backend/target/surefire-reports/
 
   shipping-test:
     name: Shipping Service (Testes & Qualidade)
@@ -52,23 +53,25 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: 'maven'
+          cache-dependency-path: '26E2_5/TP5/shipping-service/pom.xml'
 
       - name: Executar Testes Automatizados do Microsserviço de Frete
-        run: mvn -B clean test --file shipping-service/pom.xml
+        working-directory: 26E2_5/TP5/shipping-service
+        run: mvn -B clean test
 
       - name: Publicar Relatório de Testes Surefire
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: shipping-test-results
-          path: shipping-service/target/surefire-reports/
+          path: 26E2_5/TP5/shipping-service/target/surefire-reports/
 
   frontend-build:
     name: Frontend React (Instalação & Build)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: frontend
+        working-directory: 26E2_5/TP5/frontend
     steps:
       - name: Checkout do Repositório
         uses: actions/checkout@v4
@@ -78,7 +81,7 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: frontend/package.json
+          cache-dependency-path: '26E2_5/TP5/frontend/package-lock.json'
 
       - name: Instalar Dependências do Frontend
         run: npm install
@@ -90,7 +93,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
-          path: frontend/dist/
+          path: 26E2_5/TP5/frontend/dist/
 
   k8s-validation:
     name: Validação de Manifestos Kubernetes
@@ -103,6 +106,7 @@ jobs:
         uses: azure/setup-kubectl@v3
 
       - name: Validar Sintaxe dos Manifestos com Kustomize Dry-Run
+        working-directory: 26E2_5/TP5/k8s
         run: |
-          kubectl kustomize k8s/ > k8s-compiled.yaml
+          kubectl kustomize . > k8s-compiled.yaml
           kubectl apply --dry-run=client -f k8s-compiled.yaml

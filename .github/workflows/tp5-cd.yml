@@ -1,11 +1,4 @@
-# ==============================================================================
-# NOTA SOBRE A ESTRUTURA DO REPOSITÓRIO:
-# O GitHub Actions exige que os arquivos de workflow fiquem obrigatoriamente
-# na raiz do repositório Git (.github/workflows/tp5-cd.yml).
-# Este arquivo é mantido aqui dentro de 26E2_5/TP5 como referência local da entrega.
-# O workflow ativo e executado pelo GitHub está em /.github/workflows/tp5-cd.yml
-# ==============================================================================
-name: Nexus Store CD - Continuous Delivery & Container Packaging
+name: Nexus Store CD - TP5 Continuous Delivery & Packaging
 
 on:
   push:
@@ -13,6 +6,9 @@ on:
       - 'v*.*.*'
     branches:
       - main
+    paths:
+      - '26E2_5/TP5/**'
+      - '.github/workflows/tp5-*.yml'
   workflow_dispatch:
 
 jobs:
@@ -23,13 +19,13 @@ jobs:
       matrix:
         service:
           - name: backend
-            context: ./backend
+            context: ./26E2_5/TP5/backend
             image: nexus-store/backend
           - name: shipping-service
-            context: ./shipping-service
+            context: ./26E2_5/TP5/shipping-service
             image: nexus-store/shipping-service
           - name: frontend
-            context: ./frontend
+            context: ./26E2_5/TP5/frontend
             image: nexus-store/frontend
     steps:
       - name: Checkout do Repositório
@@ -59,7 +55,7 @@ jobs:
         uses: azure/setup-kubectl@v3
 
       - name: Renderizar Manifestos Kustomize com Nova Tag
+        working-directory: 26E2_5/TP5/k8s
         run: |
-          cd k8s
           kubectl kustomize . > manifests-deployed.yaml
           cat manifests-deployed.yaml | grep -E "image:|name:" | head -n 30
