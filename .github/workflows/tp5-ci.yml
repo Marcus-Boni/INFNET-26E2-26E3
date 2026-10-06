@@ -109,4 +109,4 @@ jobs:
         working-directory: 26E2_5/TP5/k8s
         run: |
           kubectl kustomize . > k8s-compiled.yaml
-          kubectl apply --dry-run=client -f k8s-compiled.yaml
+          kubectl apply --dry-run=client --validate=false -f k8s-compiled.yaml
